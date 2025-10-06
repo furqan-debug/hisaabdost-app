@@ -78,10 +78,11 @@ serve(async (req) => {
             });
           } catch (error) {
             console.error("❌ Error sending to token:", tokenData.token, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             results.push({
               token: tokenData.token,
               success: false,
-              error: error.message,
+              error: errorMessage,
               platform: tokenData.platform,
             });
           }
@@ -114,8 +115,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("❌ Error in send-push-notification:", error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
