@@ -114,10 +114,17 @@ export class MonthlyIncomeService {
         upsertData.family_id = familyId;
       }
       
-      // Use upsert without onConflict - the unique indexes will handle it
+      // Use upsert with proper conflict target based on context
+      const conflictTarget = isPersonalMode 
+        ? 'user_id,month_year' 
+        : 'family_id,month_year';
+      
       const { error: monthlyError } = await supabase
         .from('monthly_incomes')
-        .upsert(upsertData);
+        .upsert(upsertData, { 
+          onConflict: conflictTarget,
+          ignoreDuplicates: false 
+        });
 
       if (monthlyError) {
         console.error('Error updating monthly income:', monthlyError);
