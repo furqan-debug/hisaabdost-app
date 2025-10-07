@@ -61,19 +61,21 @@ export class MonthlyIncomeService {
         return Number(monthlyIncomeData.income_amount);
       }
       
-      // Fallback to profiles table for current month
-      const currentMonth = format(new Date(), 'yyyy-MM');
-      if (monthKey === currentMonth) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('monthly_income')
-          .eq('id', userId)
-          .maybeSingle();
-          
-        if (!profileError && profileData?.monthly_income) {
-          // Copy to monthly_incomes table for future use
-          await this.setMonthlyIncome(userId, monthDate, Number(profileData.monthly_income));
-          return Number(profileData.monthly_income);
+      // Fallback to profiles table ONLY for personal mode and current month
+      if (isPersonalMode) {
+        const currentMonth = format(new Date(), 'yyyy-MM');
+        if (monthKey === currentMonth) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('monthly_income')
+            .eq('id', userId)
+            .maybeSingle();
+            
+          if (!profileError && profileData?.monthly_income) {
+            // Copy to monthly_incomes table for future use
+            await this.setMonthlyIncome(userId, monthDate, Number(profileData.monthly_income), null, true);
+            return Number(profileData.monthly_income);
+          }
         }
       }
       
@@ -91,14 +93,15 @@ export class MonthlyIncomeService {
     userId: string, 
     monthDate: Date, 
     amount: number, 
-    familyId?: string | null
+    familyId?: string | null,
+    isPersonalMode?: boolean
   ): Promise<boolean> {
     const monthKey = format(monthDate, 'yyyy-MM');
     
     try {
-      console.log("Setting monthly income:", userId, monthKey, amount, "Family:", familyId);
+      console.log("Setting monthly income:", userId, monthKey, amount, "Family:", familyId, "Personal mode:", isPersonalMode);
       
-      // Update in monthly_incomes table using proper upsert with onConflict
+      // Build upsert data based on context
       const upsertData: any = {
         user_id: userId,
         month_year: monthKey,
@@ -106,25 +109,24 @@ export class MonthlyIncomeService {
         updated_at: new Date().toISOString()
       };
       
-      // Add family_id if in family mode
-      if (familyId) {
+      // Add family_id only when in family mode
+      if (!isPersonalMode && familyId) {
         upsertData.family_id = familyId;
       }
       
+      // Use upsert without onConflict - the unique indexes will handle it
       const { error: monthlyError } = await supabase
         .from('monthly_incomes')
-        .upsert(upsertData, {
-          onConflict: 'user_id,month_year'
-        });
+        .upsert(upsertData);
 
       if (monthlyError) {
         console.error('Error updating monthly income:', monthlyError);
         return false;
       }
 
-      // Also update profiles table if it's the current month
+      // Only update profiles table if in personal mode and current month
       const currentMonth = format(new Date(), 'yyyy-MM');
-      if (monthKey === currentMonth) {
+      if (isPersonalMode && monthKey === currentMonth) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ monthly_income: amount })
@@ -137,7 +139,7 @@ export class MonthlyIncomeService {
 
       // Trigger UI refresh
       window.dispatchEvent(new CustomEvent('income-updated', { 
-        detail: { userId, monthKey, amount } 
+        detail: { userId, monthKey, amount, familyId, isPersonalMode } 
       }));
 
       return true;

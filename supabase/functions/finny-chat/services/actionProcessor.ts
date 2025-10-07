@@ -50,10 +50,10 @@ export async function processAction(
         return await addWalletFunds(actionData, userId, supabase);
       
       case 'set_income':
-        return await setIncome(actionData, userId, supabase);
+        return await setIncome(actionData, userId, supabase, actionData.family_id, actionData.is_personal_mode);
       
       case 'update_income':
-        return await setIncome(actionData, userId, supabase); // Use same function as set_income
+        return await setIncome(actionData, userId, supabase, actionData.family_id, actionData.is_personal_mode); // Use same function as set_income
       
       default:
         return `I'm not sure how to handle that action type: ${actionData.type}`;

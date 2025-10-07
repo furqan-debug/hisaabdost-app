@@ -12,6 +12,7 @@ import { PercentageChange } from "./PercentageChange";
 import { logIncomeActivity } from "@/services/activityLogService";
 import { MonthlyIncomeService } from "@/services/monthlyIncomeService";
 import { useMonthContext } from "@/hooks/use-month-context";
+import { useFamilyContext } from "@/hooks/useFamilyContext";
 
 interface EditableIncomeCardProps {
   monthlyIncome: number;
@@ -37,6 +38,7 @@ export const EditableIncomeCard = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const { user } = useAuth();
   const { selectedMonth } = useMonthContext();
+  const { activeFamilyId, isPersonalMode } = useFamilyContext();
 
   const handleSave = async () => {
     const newIncome = parseFloat(inputValue);
@@ -57,8 +59,8 @@ export const EditableIncomeCard = ({
         throw new Error("User not authenticated");
       }
 
-      // Use the new MonthlyIncomeService
-      const success = await MonthlyIncomeService.setMonthlyIncome(user.id, selectedMonth, newIncome);
+      // Use the new MonthlyIncomeService with family context
+      const success = await MonthlyIncomeService.setMonthlyIncome(user.id, selectedMonth, newIncome, activeFamilyId, isPersonalMode);
       
       if (!success) {
         throw new Error("Failed to update monthly income");

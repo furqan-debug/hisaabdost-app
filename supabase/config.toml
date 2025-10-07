@@ -1,1 +1,22 @@
 project_id = "bklfolfivjonzpprytkz"
+
+[functions.finny-chat]
+verify_jwt = false
+
+[functions.create-family]
+verify_jwt = true
+
+[functions.invite-family-member]
+verify_jwt = true
+
+[functions.accept-family-invitation]
+verify_jwt = true
+
+[functions.reject-family-invitation]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.scan-receipt]
+verify_jwt = true

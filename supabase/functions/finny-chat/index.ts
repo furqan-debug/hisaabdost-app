@@ -190,7 +190,7 @@ serve(async (req) => {
     const [expensesResult, budgetsResult, profileResult, customCategoriesResult] = await Promise.allSettled([
       supabase.from('expenses').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(5),
       supabase.from('budgets').select('*').eq('user_id', userId),
-      supabase.from('profiles').select('monthly_income').eq('id', userId).single(),
+      supabase.from('profiles').select('monthly_income, active_family_id').eq('id', userId).single(),
       supabase.from('custom_categories').select('name').eq('user_id', userId)
     ]);
 
@@ -199,6 +199,7 @@ serve(async (req) => {
     const budgets = budgetsResult.status === 'fulfilled' ? budgetsResult.value.data || [] : [];
     const monthlyIncome = profileResult.status === 'fulfilled' ? profileResult.value.data?.monthly_income || 'Not set' : 'Not set';
     const customCategories = customCategoriesResult.status === 'fulfilled' ? customCategoriesResult.value.data || [] : [];
+    const activeFamilyId = profileResult.status === 'fulfilled' ? profileResult.value.data?.active_family_id : null;
 
     // Combine default and custom categories (official app categories)
     const defaultCategories = [
@@ -322,8 +323,9 @@ Current Budgets: ${JSON.stringify(budgets)}`;
         const actionData = JSON.parse(actionMatch[1]);
         console.log("Processing action:", actionData);
         
-        // Add family_id to action data
-        actionData.family_id = familyId;
+        // Add family context to action data
+        actionData.family_id = activeFamilyId || familyId;
+        actionData.is_personal_mode = !activeFamilyId;
         
         const actionResult = await processAction(actionData, userId, supabase);
         processedActions.push({ action: actionData, result: actionResult });

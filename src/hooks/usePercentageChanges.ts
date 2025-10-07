@@ -43,16 +43,14 @@ export const usePercentageChanges = (monthlyExpenses: number, monthlyIncome: num
         // Calculate previous month's total expenses
         const prevMonthExpenses = prevExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
         
-        // Fetch previous month's income from profiles or budgets
-        const { data: incomeData } = await supabase
-          .from('profiles')
-          .select('monthly_income')
-          .eq('id', user.id)
-          .single();
-
-        // Use the fetched previous month's income or fallback to current income
-        // This is a fallback - ideally, we would store monthly income history
-        const prevMonthIncome = incomeData?.monthly_income || monthlyIncome;
+        // Fetch previous month's income using the service to respect family context
+        const { MonthlyIncomeService } = await import('@/services/monthlyIncomeService');
+        const prevMonthIncome = await MonthlyIncomeService.getMonthlyIncome(
+          user.id,
+          previousMonth,
+          activeFamilyId,
+          isPersonalMode
+        );
         
         // Calculate previous month's savings rate
         const prevSavingsRate = prevMonthIncome > 0 

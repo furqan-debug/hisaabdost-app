@@ -70,7 +70,9 @@ export function CurrencyStep({ onComplete, initialData }: CurrencyStepProps) {
         await MonthlyIncomeService.setMonthlyIncome(
           user.id,
           new Date(),
-          finalFormData.monthlyIncome
+          finalFormData.monthlyIncome,
+          null,
+          true  // Always personal mode during onboarding
         );
       }
       
