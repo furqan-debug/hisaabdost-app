@@ -35,6 +35,8 @@ export function FamilyCard({
     .toUpperCase()
     .slice(0, 2);
 
+  const hasActions = onSettings || onLeave;
+
   return (
     <Card 
       className={`group cursor-pointer transition-all duration-200 ${
@@ -75,30 +77,32 @@ export function FamilyCard({
               </div>
               
               {/* Action Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {onSettings && (
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSettings(); }}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                  )}
-                  {onLeave && (
-                    <DropdownMenuItem 
-                      onClick={(e) => { e.stopPropagation(); onLeave(); }}
-                      className="text-destructive"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Leave Family
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {hasActions && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="z-50 bg-background">
+                    {onSettings && (
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSettings(); }}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Delete Family
+                      </DropdownMenuItem>
+                    )}
+                    {onLeave && (
+                      <DropdownMenuItem 
+                        onClick={(e) => { e.stopPropagation(); onLeave(); }}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Leave Family
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* Stats & Badges */}

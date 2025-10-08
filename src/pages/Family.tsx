@@ -13,7 +13,7 @@ import { FamilyStats } from '@/components/family/FamilyStats';
 import { FamilySwitcher } from '@/components/family/FamilySwitcher';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -35,9 +35,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/auth';
+import { FamilyRole } from '@/types/family';
 
 export default function Family() {
-  const { userFamilies, familyMembers, currentFamily, refetch, switchToFamily } = useFamilyContext();
+  const { userFamilies, familyMembers, currentFamily, refetch, switchToFamily, switchToPersonal, activeFamilyId } = useFamilyContext();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [newFamilyName, setNewFamilyName] = useState('');
@@ -47,6 +48,34 @@ export default function Family() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
+
+  // Fetch user roles for all families
+  const { data: userRoles = {} } = useQuery({
+    queryKey: ['user-family-roles', user?.id, userFamilies],
+    queryFn: async () => {
+      if (!user?.id || userFamilies.length === 0) return {};
+      
+      const familyIds = userFamilies.map(f => f.id);
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('family_id, role')
+        .eq('user_id', user.id)
+        .in('family_id', familyIds)
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      
+      const rolesMap: Record<string, FamilyRole> = {};
+      data?.forEach(item => {
+        rolesMap[item.family_id] = item.role as FamilyRole;
+      });
+      return rolesMap;
+    },
+    enabled: !!user?.id && userFamilies.length > 0,
+  });
 
   const createFamilyMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -119,6 +148,73 @@ export default function Family() {
     onError: (error) => {
       toast.error('Failed to remove member');
       console.error('Remove member error:', error);
+    },
+  });
+
+  const leaveFamilyMutation = useMutation({
+    mutationFn: async (familyId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data: membership, error: fetchError } = await supabase
+        .from('family_members')
+        .select('id')
+        .eq('family_id', familyId)
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      const { error } = await supabase
+        .from('family_members')
+        .update({ is_active: false })
+        .eq('id', membership.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: async (_, familyId) => {
+      toast.success('You have left the family');
+      
+      // If the user left their active family, switch to personal mode
+      if (activeFamilyId === familyId) {
+        await switchToPersonal();
+      }
+      
+      await refetch();
+      setLeaveDialogOpen(false);
+      setSelectedFamilyId(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to leave family');
+      console.error('Leave family error:', error);
+    },
+  });
+
+  const deleteFamilyMutation = useMutation({
+    mutationFn: async (familyId: string) => {
+      // Delete the family (cascade will handle members and other related data)
+      const { error } = await supabase
+        .from('families')
+        .delete()
+        .eq('id', familyId);
+      
+      if (error) throw error;
+    },
+    onSuccess: async (_, familyId) => {
+      toast.success('Family deleted successfully');
+      
+      // If the user deleted their active family, switch to personal mode
+      if (activeFamilyId === familyId) {
+        await switchToPersonal();
+      }
+      
+      await refetch();
+      setDeleteDialogOpen(false);
+      setSelectedFamilyId(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to delete family');
+      console.error('Delete family error:', error);
     },
   });
 
@@ -269,16 +365,29 @@ export default function Family() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {userFamilies.map((family) => (
-                        <FamilyCard
-                          key={family.id}
-                          family={family}
-                          isActive={currentFamily?.id === family.id}
-                          memberCount={getFamilyMemberCount(family.id)}
-                          onSwitch={() => switchToFamily(family.id)}
-                        />
-                      ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
+                      {userFamilies.map((family) => {
+                        const userRole = userRoles[family.id];
+                        const isOwner = userRole === 'owner';
+                        
+                        return (
+                          <FamilyCard
+                            key={family.id}
+                            family={family}
+                            isActive={currentFamily?.id === family.id}
+                            memberCount={getFamilyMemberCount(family.id)}
+                            onSwitch={() => switchToFamily(family.id)}
+                            onSettings={isOwner ? () => {
+                              setSelectedFamilyId(family.id);
+                              setDeleteDialogOpen(true);
+                            } : undefined}
+                            onLeave={!isOwner ? () => {
+                              setSelectedFamilyId(family.id);
+                              setLeaveDialogOpen(true);
+                            } : undefined}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
@@ -465,6 +574,50 @@ export default function Family() {
               <SentInvitations />
             </TabsContent>
           </Tabs>
+
+          {/* Leave Family Confirmation Dialog */}
+          <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Leave Family?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to leave this family? You will lose access to all shared data and expenses.
+                  You can only rejoin if invited again.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedFamilyId(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => selectedFamilyId && leaveFamilyMutation.mutate(selectedFamilyId)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Leave Family
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Delete Family Confirmation Dialog */}
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Family?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this family? This action cannot be undone. All family data,
+                  expenses, budgets, and member associations will be permanently deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedFamilyId(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => selectedFamilyId && deleteFamilyMutation.mutate(selectedFamilyId)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete Family
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
