@@ -46,6 +46,7 @@ export default function Family() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
 
   const createFamilyMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -200,7 +201,7 @@ export default function Family() {
           </div>
 
           {/* Clean Tabs Navigation */}
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full sm:w-auto grid grid-cols-3 h-11 bg-muted">
               <TabsTrigger value="overview" className="gap-2">
                 <Activity className="h-4 w-4" />

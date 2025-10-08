@@ -51,7 +51,14 @@ export const PendingInvitations = () => {
 
   if (invitations.length === 0) {
     console.log("🔔 No pending invitations to display");
-    return null;
+    return (
+      <Card className="border-dashed">
+        <CardContent className="pt-6 text-center text-muted-foreground text-sm">
+          <Mail className="h-5 w-5 mx-auto mb-2 opacity-60" />
+          No pending invitations
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

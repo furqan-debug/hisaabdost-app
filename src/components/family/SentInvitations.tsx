@@ -54,7 +54,14 @@ export function SentInvitations() {
   }
 
   if (sentInvitations.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <Mail className="h-5 w-5 mx-auto mb-2 opacity-60" />
+          No invitations sent yet
+        </CardContent>
+      </Card>
+    );
   }
 
   const getStatusIcon = (status: string) => {

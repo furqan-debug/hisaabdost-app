@@ -62,6 +62,13 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     },
     enabled: !!user?.id,
   });
+  
+  // Auto-select first family if none active to avoid blank UI
+  useEffect(() => {
+    if (!activeFamilyId && userFamilies.length > 0) {
+      setActiveFamilyId(userFamilies[0].id);
+    }
+  }, [activeFamilyId, userFamilies]);
 
   // Fetch current family members
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery({
