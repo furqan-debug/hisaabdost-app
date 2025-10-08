@@ -12,22 +12,25 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon: Icon, description, trend }: StatCardProps) {
   return (
-    <Card className="hover:shadow-md transition-all duration-200">
-      <CardContent className="p-4">
+    <Card className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 backdrop-blur-sm border-muted overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardContent className="p-5 relative">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground font-medium">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+          <div className="space-y-2 flex-1">
+            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wide">{title}</p>
+            <p className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              {value}
+            </p>
             {description && (
               <p className="text-xs text-muted-foreground">{description}</p>
             )}
           </div>
-          <div className={`p-2 rounded-lg ${
-            trend === 'up' ? 'bg-green-500/10 text-green-600' :
-            trend === 'down' ? 'bg-red-500/10 text-red-600' :
-            'bg-primary/10 text-primary'
+          <div className={`p-3 rounded-xl transition-all duration-300 group-hover:scale-110 ${
+            trend === 'up' ? 'bg-gradient-to-br from-green-500/20 to-green-600/10 text-green-600 shadow-lg shadow-green-500/20' :
+            trend === 'down' ? 'bg-gradient-to-br from-red-500/20 to-red-600/10 text-red-600 shadow-lg shadow-red-500/20' :
+            'bg-gradient-to-br from-primary/20 to-primary/10 text-primary shadow-lg shadow-primary/20'
           }`}>
-            <Icon className="h-5 w-5" />
+            <Icon className="h-6 w-6" />
           </div>
         </div>
       </CardContent>

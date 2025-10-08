@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Plus, Search } from 'lucide-react';
+import { Users, Plus, Search, Mail, Activity } from 'lucide-react';
 import { PendingInvitations } from '@/components/family/PendingInvitations';
 import { SentInvitations } from '@/components/family/SentInvitations';
 import { FamilyCard } from '@/components/family/FamilyCard';
@@ -135,20 +135,21 @@ export default function Family() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="space-y-8">
         {/* Header with Context Switcher */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Users className="h-8 w-8" />
-              Family Management
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your families and shared expenses
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 backdrop-blur-sm border">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <Users className="h-9 w-9 text-primary" />
+                Family Management
+              </h1>
+              <p className="text-muted-foreground text-base">
+                Manage your families and shared expenses seamlessly
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
             <FamilySwitcher />
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
@@ -184,19 +185,34 @@ export default function Family() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </div>
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="invitations">Invitations</TabsTrigger>
+          <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:inline-grid h-auto p-1 bg-muted/50 backdrop-blur-sm">
+            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="members" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Members</span>
+              {familyMembers.length > 0 && (
+                <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                  {familyMembers.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="invitations" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Invitations</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6 animate-fade-in">
             {/* Family Stats */}
             {currentFamily && (
               <FamilyStats
@@ -207,24 +223,43 @@ export default function Family() {
             )}
 
             {/* Your Families */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Families</CardTitle>
-                <CardDescription>
-                  {userFamilies.length === 0
-                    ? 'You are not part of any family yet'
-                    : `You are part of ${userFamilies.length} ${userFamilies.length === 1 ? 'family' : 'families'}`}
-                </CardDescription>
+            <Card className="backdrop-blur-sm border-muted">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">Your Families</CardTitle>
+                    <CardDescription className="mt-1.5">
+                      {userFamilies.length === 0
+                        ? 'You are not part of any family yet'
+                        : `You are part of ${userFamilies.length} ${userFamilies.length === 1 ? 'family' : 'families'}`}
+                    </CardDescription>
+                  </div>
+                  {userFamilies.length > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                      <Users className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium text-primary">{userFamilies.length}</span>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {userFamilies.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                    <p className="text-lg font-medium mb-2">No families yet</p>
-                    <p className="text-sm">Create your first family to start tracking shared expenses</p>
+                  <div className="text-center py-16 px-4">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                      <Users className="relative h-20 w-20 mx-auto text-muted-foreground/40" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">No families yet</h3>
+                    <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                      Create your first family to start tracking shared expenses and collaborate with others
+                    </p>
+                    <Button onClick={() => setCreateDialogOpen(true)} size="lg" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Create Your First Family
+                    </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {userFamilies.map((family) => (
                       <FamilyCard
                         key={family.id}
@@ -241,16 +276,22 @@ export default function Family() {
           </TabsContent>
 
           {/* Members Tab */}
-          <TabsContent value="members" className="space-y-6">
+          <TabsContent value="members" className="space-y-6 animate-fade-in">
             {currentFamily ? (
               <>
-                <Card>
-                  <CardHeader>
+                <Card className="backdrop-blur-sm border-muted">
+                  <CardHeader className="pb-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
-                        <CardTitle>{currentFamily.name} Members</CardTitle>
-                        <CardDescription>
-                          {familyMembers.length} {familyMembers.length === 1 ? 'member' : 'members'}
+                      <div className="space-y-1">
+                        <CardTitle className="text-2xl flex items-center gap-2">
+                          {currentFamily.name} Members
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+                            <Users className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-sm font-medium text-primary">{familyMembers.length}</span>
+                          </div>
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                          Manage family members and their roles
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -352,20 +393,24 @@ export default function Family() {
                 </Card>
               </>
             ) : (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="h-16 w-16 mx-auto mb-4 opacity-30 text-muted-foreground" />
-                  <p className="text-lg font-medium mb-2">No Family Selected</p>
-                  <p className="text-sm text-muted-foreground">
+              <Card className="backdrop-blur-sm border-muted">
+                <CardContent className="text-center py-16 px-4">
+                  <div className="relative inline-block mb-6">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                    <Users className="relative h-20 w-20 mx-auto text-muted-foreground/40" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No Family Selected</h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
                     Switch to a family context to view and manage members
                   </p>
+                  <FamilySwitcher />
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
           {/* Invitations Tab */}
-          <TabsContent value="invitations" className="space-y-6">
+          <TabsContent value="invitations" className="space-y-6 animate-fade-in">
             <PendingInvitations />
             <SentInvitations />
           </TabsContent>
