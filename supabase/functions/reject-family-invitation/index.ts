@@ -15,13 +15,18 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const authHeader = req.headers.get("Authorization")!;
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
+    // Create client with service role for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
         headers: { Authorization: authHeader },
       },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     });
 
     // Get the current user
