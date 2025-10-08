@@ -15,29 +15,27 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const authHeader = req.headers.get("Authorization")!;
 
-    // Create client with service role for database operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    const supabase = createClient(supabaseUrl, supabaseKey, {
       global: {
         headers: { Authorization: authHeader },
       },
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
     });
 
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    // Extract user id from verified JWT (Supabase verifies before invocation)
+    const token = authHeader?.split(" ")[1] ?? "";
+    let userId: string | null = null;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1] || ""));
+      userId = payload?.sub || null;
+    } catch (_) {}
 
-    if (userError || !user) {
+    if (!userId) {
+      console.error("❌ Missing or invalid JWT token in reject-family-invitation");
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Unauthorized: invalid or missing token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -56,7 +54,7 @@ serve(async (req) => {
       .from("family_invitations")
       .select("*")
       .eq("id", invitationId)
-      .eq("invited_user_id", user.id)
+      .eq("invited_user_id", userId)
       .eq("status", "pending")
       .single();
 
@@ -99,7 +97,7 @@ serve(async (req) => {
     await supabase
       .from("activity_logs")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         action_type: "family_invitation_rejected",
         action_description: `Rejected invitation to join ${invitation.family_name || 'a family'}`,
         metadata: {
