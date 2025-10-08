@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFamilyContext } from '@/hooks/useFamilyContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,14 @@ export default function Family() {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
+
+  // Ensure dialogs are closed on unmount to avoid overlays blocking UI
+  useEffect(() => {
+    return () => {
+      setLeaveDialogOpen(false);
+      setDeleteDialogOpen(false);
+    };
+  }, []);
 
   // Fetch user roles for all families
   const { data: userRoles = {}, refetch: refetchRoles } = useQuery({
@@ -175,19 +183,19 @@ export default function Family() {
       if (error) throw error;
     },
     onSuccess: async (_, familyId) => {
-      // If the user left their active family, switch to personal mode
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
 
-      // Close dialog immediately and navigate away to avoid any heavy re-render on this page
+      // Close dialog and navigate immediately
       setLeaveDialogOpen(false);
       setSelectedFamilyId(null);
-      navigate('/app/dashboard');
+      navigate('/app/dashboard', { replace: true });
 
-      // Refetch families and roles in background
-      await refetch();
-      await refetchRoles();
+      // Fire-and-forget cache updates
+      queryClient.invalidateQueries({ queryKey: ['families', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['family-members'] });
+      queryClient.invalidateQueries({ queryKey: ['user-family-roles', user?.id] });
 
       toast.success('You have left the family');
     },
@@ -208,19 +216,19 @@ export default function Family() {
       if (error) throw error;
     },
     onSuccess: async (_, familyId) => {
-      // If the user deleted their active family, switch to personal mode
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
 
-      // Close dialog immediately and navigate away to avoid any heavy re-render on this page
+      // Close dialog and navigate immediately
       setDeleteDialogOpen(false);
       setSelectedFamilyId(null);
-      navigate('/app/dashboard');
+      navigate('/app/dashboard', { replace: true });
 
-      // Refetch families and roles in background
-      await refetch();
-      await refetchRoles();
+      // Fire-and-forget cache updates
+      queryClient.invalidateQueries({ queryKey: ['families', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['family-members'] });
+      queryClient.invalidateQueries({ queryKey: ['user-family-roles', user?.id] });
 
       toast.success('Family deleted successfully');
     },
@@ -602,8 +610,9 @@ export default function Family() {
                 <AlertDialogAction
                   onClick={() => selectedFamilyId && leaveFamilyMutation.mutate(selectedFamilyId)}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={leaveFamilyMutation.isPending}
                 >
-                  Leave Family
+                  {leaveFamilyMutation.isPending ? 'Leaving...' : 'Leave Family'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -624,8 +633,9 @@ export default function Family() {
                 <AlertDialogAction
                   onClick={() => selectedFamilyId && deleteFamilyMutation.mutate(selectedFamilyId)}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={deleteFamilyMutation.isPending}
                 >
-                  Delete Family
+                  {deleteFamilyMutation.isPending ? 'Deleting...' : 'Delete Family'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

@@ -137,6 +137,20 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   const currentFamily = userFamilies.find(f => f.id === activeFamilyId) || null;
   const isPersonalMode = !activeFamilyId;
 
+  // Guard: if active family was deleted or user left it, switch to personal mode
+  useEffect(() => {
+    if (activeFamilyId && userFamilies.length > 0 && !userFamilies.some(f => f.id === activeFamilyId)) {
+      // Optimistically clear active family to avoid UI freeze on dangling context
+      setActiveFamilyId(null);
+      // Sync profile in background
+      switchFamilyMutation.mutate(null, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+        }
+      });
+    }
+  }, [activeFamilyId, userFamilies]);
+
   const switchToFamily = async (familyId: string) => {
     await switchFamilyMutation.mutateAsync(familyId);
   };
