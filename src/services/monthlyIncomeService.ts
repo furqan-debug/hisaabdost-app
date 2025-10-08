@@ -114,21 +114,43 @@ export class MonthlyIncomeService {
         upsertData.family_id = familyId;
       }
       
-      // Use upsert with proper conflict target based on context
-      const conflictTarget = isPersonalMode 
-        ? 'user_id,month_year' 
-        : 'family_id,month_year';
-      
-      const { error: monthlyError } = await supabase
+      // Perform manual upsert to avoid ON CONFLICT with partial unique indexes
+      // 1) Try UPDATE first
+      let updateQuery = supabase
         .from('monthly_incomes')
-        .upsert(upsertData, { 
-          onConflict: conflictTarget,
-          ignoreDuplicates: false 
-        });
+        .update({
+          income_amount: amount,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('month_year', monthKey);
 
-      if (monthlyError) {
-        console.error('Error updating monthly income:', monthlyError);
+      if (isPersonalMode) {
+        updateQuery = updateQuery.eq('user_id', userId).is('family_id', null);
+      } else if (familyId) {
+        updateQuery = updateQuery.eq('family_id', String(familyId));
+      } else {
+        // Fallback to user context if personal mode not specified
+        updateQuery = updateQuery.eq('user_id', userId);
+      }
+
+      const { data: updatedRows, error: updateError } = await updateQuery.select('id');
+      if (updateError) {
+        console.error('Error updating monthly income (update step):', updateError);
         return false;
+      }
+
+      let operationSucceeded = Array.isArray(updatedRows) && updatedRows.length > 0;
+
+      // 2) If no rows updated, INSERT
+      if (!operationSucceeded) {
+        const { error: insertError } = await supabase
+          .from('monthly_incomes')
+          .insert(upsertData);
+
+        if (insertError) {
+          console.error('Error inserting monthly income (insert step):', insertError);
+          return false;
+        }
       }
 
       // Only update profiles table if in personal mode and current month

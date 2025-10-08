@@ -25,13 +25,42 @@ export async function setIncome(
       upsertData.family_id = familyId;
     }
 
-    const { error: monthlyIncomeError } = await supabase
+    // Manual upsert to work with partial unique indexes
+    // 1) Try UPDATE first
+    let updateQuery = supabase
       .from('monthly_incomes')
-      .upsert(upsertData);
+      .update({
+        income_amount: parseFloat(action.amount),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('month_year', currentMonth);
 
-    if (monthlyIncomeError) {
-      console.error("Monthly income update error:", monthlyIncomeError);
-      throw monthlyIncomeError;
+    if (isPersonalMode) {
+      updateQuery = updateQuery.eq('user_id', userId).is('family_id', null);
+    } else if (familyId) {
+      updateQuery = updateQuery.eq('family_id', String(familyId));
+    } else {
+      updateQuery = updateQuery.eq('user_id', userId);
+    }
+
+    const { data: updatedRows, error: updateError } = await updateQuery.select('id');
+    if (updateError) {
+      console.error('Monthly income update error (update step):', updateError);
+      throw updateError;
+    }
+
+    const didUpdate = Array.isArray(updatedRows) && updatedRows.length > 0;
+
+    // 2) If no rows updated, INSERT
+    if (!didUpdate) {
+      const { error: insertError } = await supabase
+        .from('monthly_incomes')
+        .insert(upsertData);
+
+      if (insertError) {
+        console.error('Monthly income update error (insert step):', insertError);
+        throw insertError;
+      }
     }
 
     // Only update profiles table if in personal mode and current month
