@@ -41,6 +41,7 @@ export default function Family() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [newFamilyName, setNewFamilyName] = useState('');
+  const [inviteMemberName, setInviteMemberName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -79,18 +80,19 @@ export default function Family() {
   });
 
   const inviteMemberMutation = useMutation({
-    mutationFn: async (email: string) => {
+    mutationFn: async ({ memberName, email }: { memberName: string; email: string }) => {
       if (!currentFamily?.id) throw new Error('No family selected');
       const { data, error } = await supabase.functions.invoke('invite-family-member', {
-        body: { familyId: currentFamily.id, email },
+        body: { familyId: currentFamily.id, memberName, email },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       return data;
     },
-    onSuccess: (_, email) => {
-      toast.success(`Invitation sent to ${email}!`);
+    onSuccess: (_, { memberName }) => {
+      toast.success(`Invitation sent to ${memberName}!`);
       toast.info('They will see the invitation in their Family page', { duration: 4000 });
+      setInviteMemberName('');
       setInviteEmail('');
       setInviteDialogOpen(false);
       refetch();
@@ -158,32 +160,35 @@ export default function Family() {
                   Create Family
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Family</DialogTitle>
-                  <DialogDescription>
-                    Create a family account to share expenses with other members
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="family-name">Family Name</Label>
-                    <Input
-                      id="family-name"
-                      placeholder="e.g., Smith Family"
-                      value={newFamilyName}
-                      onChange={(e) => setNewFamilyName(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full"
-                    onClick={() => createFamilyMutation.mutate(newFamilyName)}
-                    disabled={!newFamilyName.trim() || createFamilyMutation.isPending}
-                  >
-                    Create Family
-                  </Button>
-                </div>
-              </DialogContent>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="text-xl">Create New Family</DialogTitle>
+                              <DialogDescription>
+                                Create a family account to share expenses with your members
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-5 py-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="family-name" className="text-sm font-medium">
+                                  Family Name <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                  id="family-name"
+                                  placeholder="e.g., Smith Family"
+                                  value={newFamilyName}
+                                  onChange={(e) => setNewFamilyName(e.target.value)}
+                                  className="h-11"
+                                />
+                              </div>
+                              <Button
+                                className="w-full h-11 shadow-sm"
+                                onClick={() => createFamilyMutation.mutate(newFamilyName)}
+                                disabled={!newFamilyName.trim() || createFamilyMutation.isPending}
+                              >
+                                {createFamilyMutation.isPending ? 'Creating...' : 'Create Family'}
+                              </Button>
+                            </div>
+                          </DialogContent>
             </Dialog>
             </div>
           </div>
@@ -306,35 +311,57 @@ export default function Family() {
                         </div>
                         <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button size="sm">
+                            <Button size="sm" className="shadow-sm">
                               <Plus className="h-4 w-4 mr-2" />
                               Add Member
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="sm:max-w-md">
                             <DialogHeader>
-                              <DialogTitle>Add Family Member</DialogTitle>
+                              <DialogTitle className="text-xl">Invite Family Member</DialogTitle>
                               <DialogDescription>
-                                Enter the email address of an existing Hisaab Dost user
+                                Enter the member's name and their registered email address
                               </DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-4 py-4">
+                            <div className="space-y-5 py-4">
                               <div className="space-y-2">
-                                <Label htmlFor="invite-email">Email Address</Label>
+                                <Label htmlFor="invite-name" className="text-sm font-medium">
+                                  Member Name <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                  id="invite-name"
+                                  type="text"
+                                  placeholder="e.g., John Smith"
+                                  value={inviteMemberName}
+                                  onChange={(e) => setInviteMemberName(e.target.value)}
+                                  className="h-11"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  This name will be used throughout the app
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="invite-email" className="text-sm font-medium">
+                                  Email Address <span className="text-destructive">*</span>
+                                </Label>
                                 <Input
                                   id="invite-email"
                                   type="email"
                                   placeholder="member@example.com"
                                   value={inviteEmail}
                                   onChange={(e) => setInviteEmail(e.target.value)}
+                                  className="h-11"
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                  Must be a registered Hisaab Dost user
+                                </p>
                               </div>
                               <Button
-                                className="w-full"
-                                onClick={() => inviteMemberMutation.mutate(inviteEmail)}
-                                disabled={!inviteEmail.trim() || inviteMemberMutation.isPending}
+                                className="w-full h-11 shadow-sm"
+                                onClick={() => inviteMemberMutation.mutate({ memberName: inviteMemberName, email: inviteEmail })}
+                                disabled={!inviteMemberName.trim() || !inviteEmail.trim() || inviteMemberMutation.isPending}
                               >
-                                Send Invitation
+                                {inviteMemberMutation.isPending ? 'Sending...' : 'Send Invitation'}
                               </Button>
                             </div>
                           </DialogContent>

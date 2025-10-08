@@ -107,6 +107,11 @@ export const PendingInvitations = () => {
 
                 <div className="flex-1 min-w-0">
                   <div className="mb-2">
+                    {invitation.member_name && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Join as <span className="font-semibold text-foreground">{invitation.member_name}</span>
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       <span className="font-medium text-foreground">{invitation.inviter_name || 'Someone'}</span> invited you to join
                     </p>

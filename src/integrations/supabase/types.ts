@@ -277,6 +277,7 @@ export type Database = {
           invited_by: string
           invited_user_id: string | null
           inviter_name: string | null
+          member_name: string | null
           status: Database["public"]["Enums"]["invitation_status"]
           token: string
         }
@@ -290,6 +291,7 @@ export type Database = {
           invited_by: string
           invited_user_id?: string | null
           inviter_name?: string | null
+          member_name?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           token: string
         }
@@ -303,6 +305,7 @@ export type Database = {
           invited_by?: string
           invited_user_id?: string | null
           inviter_name?: string | null
+          member_name?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           token?: string
         }

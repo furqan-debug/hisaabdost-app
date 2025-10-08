@@ -9,6 +9,7 @@ export interface PendingInvitation {
   family_name: string;
   inviter_name: string;
   invited_by: string;
+  member_name?: string;
   expires_at: string;
   created_at: string;
 }
@@ -75,7 +76,7 @@ export const usePendingInvitations = () => {
       
       const { data, error } = await supabase
         .from("family_invitations")
-        .select("id, family_id, family_name, inviter_name, invited_by, expires_at, created_at")
+        .select("id, family_id, family_name, inviter_name, invited_by, member_name, expires_at, created_at")
         .eq("invited_user_id", user.id)
         .eq("status", "pending")
         .gt("expires_at", new Date().toISOString())

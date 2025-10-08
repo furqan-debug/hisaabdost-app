@@ -90,11 +90,11 @@ export function SentInvitations() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="border-muted shadow-md">
+      <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
         <div>
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+            <Mail className="h-5 w-5 text-primary" />
             Invitations You've Sent
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
@@ -105,7 +105,7 @@ export function SentInvitations() {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="space-y-3">
           {sentInvitations.map((invitation) => {
             const familyName = invitation.families?.name || 'Unknown Family';
@@ -115,7 +115,7 @@ export function SentInvitations() {
             return (
               <div
                 key={invitation.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-all duration-200 hover:shadow-sm"
               >
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="mt-1">
@@ -124,9 +124,14 @@ export function SentInvitations() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{invitation.email}</p>
+                        {invitation.member_name && (
+                          <p className="font-semibold text-foreground truncate">{invitation.member_name}</p>
+                        )}
+                        <p className={`${invitation.member_name ? 'text-sm' : 'font-medium'} text-muted-foreground truncate`}>
+                          {invitation.email}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          Invited to <span className="font-medium">{familyName}</span>
+                          Invited to <span className="font-medium text-foreground">{familyName}</span>
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {invitation.status === 'pending' ? (

@@ -31,6 +31,7 @@ export interface FamilyInvitation {
   invited_user_id?: string;
   inviter_name?: string;
   family_name?: string;
+  member_name?: string;
   token: string;
   status: InvitationStatus;
   expires_at: string;

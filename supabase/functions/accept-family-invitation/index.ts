@@ -92,6 +92,15 @@ serve(async (req) => {
       );
     }
 
+    // Update user's display name if provided in invitation
+    if (invitation.member_name) {
+      await supabaseClient
+        .from("profiles")
+        .update({ display_name: invitation.member_name })
+        .eq("id", user.id);
+      console.log(`✅ Updated user display name to: ${invitation.member_name}`);
+    }
+
     // Add user to family
     const { error: addMemberError } = await supabaseClient
       .from("family_members")

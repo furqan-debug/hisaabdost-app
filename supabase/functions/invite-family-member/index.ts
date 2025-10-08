@@ -35,13 +35,13 @@ serve(async (req) => {
       }
     );
 
-    const { familyId, email } = await req.json();
-    console.log("📨 Invite member request:", { familyId, email });
+    const { familyId, memberName, email } = await req.json();
+    console.log("📨 Invite member request:", { familyId, memberName, email });
 
-    if (!familyId || !email) {
-      console.error("❌ Missing required fields:", { familyId, email });
+    if (!familyId || !memberName || !email) {
+      console.error("❌ Missing required fields:", { familyId, memberName, email });
       return new Response(
-        JSON.stringify({ error: "Family ID and email are required" }),
+        JSON.stringify({ error: "Family ID, member name, and email are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -176,6 +176,7 @@ serve(async (req) => {
       .insert({
         family_id: familyId,
         email: email,
+        member_name: memberName,
         invited_by: user.id,
         invited_user_id: userToAdd.id,
         inviter_name: inviterName,
