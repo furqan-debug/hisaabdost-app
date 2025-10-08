@@ -36,11 +36,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/auth';
 import { FamilyRole } from '@/types/family';
+import { useNavigate } from 'react-router-dom';
 
 export default function Family() {
   const { userFamilies, familyMembers, currentFamily, refetch, switchToFamily, switchToPersonal, activeFamilyId } = useFamilyContext();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [newFamilyName, setNewFamilyName] = useState('');
   const [inviteMemberName, setInviteMemberName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -177,14 +179,17 @@ export default function Family() {
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
-      
-      // Refetch families and roles
-      await refetch();
-      await refetchRoles();
-      
-      toast.success('You have left the family');
+
+      // Close dialog immediately and navigate away to avoid any heavy re-render on this page
       setLeaveDialogOpen(false);
       setSelectedFamilyId(null);
+      navigate('/app/dashboard');
+
+      // Refetch families and roles in background
+      await refetch();
+      await refetchRoles();
+
+      toast.success('You have left the family');
     },
     onError: (error) => {
       toast.error('Failed to leave family');
@@ -207,14 +212,17 @@ export default function Family() {
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
-      
-      // Refetch families and roles
-      await refetch();
-      await refetchRoles();
-      
-      toast.success('Family deleted successfully');
+
+      // Close dialog immediately and navigate away to avoid any heavy re-render on this page
       setDeleteDialogOpen(false);
       setSelectedFamilyId(null);
+      navigate('/app/dashboard');
+
+      // Refetch families and roles in background
+      await refetch();
+      await refetchRoles();
+
+      toast.success('Family deleted successfully');
     },
     onError: (error) => {
       toast.error('Failed to delete family');
