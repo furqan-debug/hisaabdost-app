@@ -30,7 +30,10 @@ export function FamilySwitcher() {
         <DropdownMenuLabel>Switch Context</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem onClick={() => switchToPersonal()} className="gap-2">
+        <DropdownMenuItem onClick={async () => {
+          await switchToPersonal();
+          navigate('/app/dashboard');
+        }} className="gap-2">
           <User className="h-4 w-4" />
           Personal
           {isPersonalMode && <span className="ml-auto text-xs text-muted-foreground">✓</span>}

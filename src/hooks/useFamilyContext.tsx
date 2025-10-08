@@ -32,6 +32,9 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (profile?.active_family_id) {
       setActiveFamilyId(profile.active_family_id);
+    } else if (profile?.active_family_id === null) {
+      // User has explicitly set to personal mode
+      setActiveFamilyId(null);
     }
   }, [profile]);
 
@@ -62,13 +65,6 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     },
     enabled: !!user?.id,
   });
-  
-  // Auto-select first family if none active to avoid blank UI
-  useEffect(() => {
-    if (!activeFamilyId && userFamilies.length > 0) {
-      setActiveFamilyId(userFamilies[0].id);
-    }
-  }, [activeFamilyId, userFamilies]);
 
   // Fetch current family members
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery({
