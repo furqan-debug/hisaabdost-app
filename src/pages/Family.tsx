@@ -53,8 +53,8 @@ export default function Family() {
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
 
   // Fetch user roles for all families
-  const { data: userRoles = {} } = useQuery({
-    queryKey: ['user-family-roles', user?.id, userFamilies],
+  const { data: userRoles = {}, refetch: refetchRoles } = useQuery({
+    queryKey: ['user-family-roles', user?.id],
     queryFn: async () => {
       if (!user?.id || userFamilies.length === 0) return {};
       
@@ -173,14 +173,16 @@ export default function Family() {
       if (error) throw error;
     },
     onSuccess: async (_, familyId) => {
-      toast.success('You have left the family');
-      
       // If the user left their active family, switch to personal mode
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
       
+      // Refetch families and roles
       await refetch();
+      await refetchRoles();
+      
+      toast.success('You have left the family');
       setLeaveDialogOpen(false);
       setSelectedFamilyId(null);
     },
@@ -201,14 +203,16 @@ export default function Family() {
       if (error) throw error;
     },
     onSuccess: async (_, familyId) => {
-      toast.success('Family deleted successfully');
-      
       // If the user deleted their active family, switch to personal mode
       if (activeFamilyId === familyId) {
         await switchToPersonal();
       }
       
+      // Refetch families and roles
       await refetch();
+      await refetchRoles();
+      
+      toast.success('Family deleted successfully');
       setDeleteDialogOpen(false);
       setSelectedFamilyId(null);
     },
