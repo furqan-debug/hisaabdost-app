@@ -129,8 +129,18 @@ export default function Family() {
       setCreateDialogOpen(false);
       refetch();
     },
-    onError: (error) => {
-      toast.error('Failed to create family');
+    onError: (error: any) => {
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('logged in')) {
+        toast.error('Please log in to create a family');
+      } else if (errorMessage.includes('already exists')) {
+        toast.error('A family with this name already exists');
+      } else {
+        toast.error('Unable to create family', {
+          description: 'Please try again or contact support if the problem continues.',
+        });
+      }
       console.error('Create family error:', error);
     },
   });
@@ -142,7 +152,7 @@ export default function Family() {
         body: { familyId: currentFamily.id, memberName, email },
       });
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (data?.error) throw new Error(data.error);
       return data;
     },
     onSuccess: (_, { memberName }) => {
@@ -154,7 +164,25 @@ export default function Family() {
       refetch();
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to add member');
+      // Parse the error to provide user-friendly messages
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('permission') || errorMessage.includes('don\'t have permission')) {
+        toast.error('Only family owners and admins can invite members', {
+          description: 'Ask your family owner to promote you to admin or have them send the invitation.',
+          duration: 5000,
+        });
+      } else if (errorMessage.includes('already exists') || errorMessage.includes('already a member')) {
+        toast.error('This person is already a family member');
+      } else if (errorMessage.includes('invitation already sent') || errorMessage.includes('pending invitation')) {
+        toast.error('An invitation has already been sent to this email');
+      } else if (errorMessage.includes('invalid email')) {
+        toast.error('Please enter a valid email address');
+      } else {
+        toast.error('Unable to send invitation', {
+          description: errorMessage || 'Please try again or contact support if the problem persists.',
+        });
+      }
       console.error('Invite member error:', error);
     },
   });
@@ -171,8 +199,18 @@ export default function Family() {
       toast.success('Member removed successfully');
       refetch();
     },
-    onError: (error) => {
-      toast.error('Failed to remove member');
+    onError: (error: any) => {
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('permission')) {
+        toast.error('Only family owners and admins can remove members');
+      } else if (errorMessage.includes('not found')) {
+        toast.error('Member not found');
+      } else {
+        toast.error('Unable to remove member', {
+          description: 'Please try again or contact support if the problem persists.',
+        });
+      }
       console.error('Remove member error:', error);
     },
   });
@@ -217,8 +255,22 @@ export default function Family() {
 
       toast.success('You have left the family');
     },
-    onError: (error) => {
-      toast.error('Failed to leave family');
+    onError: (error: any) => {
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('authenticated')) {
+        toast.error('Please log in to leave a family');
+      } else if (errorMessage.includes('not found') || errorMessage.includes('not a member')) {
+        toast.error('You are not a member of this family');
+      } else if (errorMessage.includes('owner')) {
+        toast.error('Family owners cannot leave', {
+          description: 'Please transfer ownership or delete the family instead.',
+        });
+      } else {
+        toast.error('Unable to leave family', {
+          description: 'Please try again or contact support if the problem continues.',
+        });
+      }
       console.error('Leave family error:', error);
     },
   });
@@ -252,8 +304,18 @@ export default function Family() {
 
       toast.success('Family deleted successfully');
     },
-    onError: (error) => {
-      toast.error('Failed to delete family');
+    onError: (error: any) => {
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('permission')) {
+        toast.error('Only family owners can delete families');
+      } else if (errorMessage.includes('not found')) {
+        toast.error('Family not found');
+      } else {
+        toast.error('Unable to delete family', {
+          description: 'Please try again or contact support if the problem persists.',
+        });
+      }
       console.error('Delete family error:', error);
     },
   });
@@ -489,7 +551,7 @@ export default function Family() {
                               <DialogHeader>
                                 <DialogTitle>Invite Family Member</DialogTitle>
                                 <DialogDescription>
-                                  Enter the member's name and their email address
+                                  Enter the member's name and their email address. Only family owners and admins can send invitations.
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="space-y-4 pt-4">
