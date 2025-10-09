@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BarChart2, Target, HandCoins, Settings, Users } from "lucide-react";
 import { useState } from "react";
 import SettingsSidebar from "../SettingsSidebar";
+import { FamilySwitcher } from "@/components/family/FamilySwitcher";
 
 interface MoreSheetProps {
   open: boolean;
@@ -42,7 +43,11 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
             </SheetDescription>
           </SheetHeader>
           
-          <div className="grid grid-cols-3 gap-4 mt-6">
+          <div className="mt-6 mb-4 flex justify-center">
+            <FamilySwitcher />
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
             {moreItems.map((item) => (
               <Button
                 key={item.label}
