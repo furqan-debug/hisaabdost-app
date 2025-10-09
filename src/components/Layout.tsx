@@ -51,7 +51,7 @@ const Layout = () => {
         <Outlet />
       </LayoutContainer>
       {isMobile && <BottomNavigation />}
-      <OnboardingDialog open={showOnboarding} />
+      {showOnboarding && <OnboardingDialog open={showOnboarding} />}
     </LayoutWrapper>
   );
 };
