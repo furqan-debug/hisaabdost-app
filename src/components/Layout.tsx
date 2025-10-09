@@ -51,7 +51,7 @@ const Layout = () => {
         <Outlet />
       </LayoutContainer>
       {isMobile && <BottomNavigation />}
-      {showOnboarding && <OnboardingDialog open={showOnboarding} />}
+      {(location.pathname === '/app' || location.pathname.startsWith('/app/dashboard')) && showOnboarding && <OnboardingDialog open={showOnboarding} />}
     </LayoutWrapper>
   );
 };
