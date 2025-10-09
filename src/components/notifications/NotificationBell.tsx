@@ -30,10 +30,7 @@ export function NotificationBell() {
   };
   return <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          
-          {!hasPermission}
-        </Button>
+        
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0 border-0 shadow-none bg-transparent" align="end" sideOffset={8}>
         <NotificationSettings onClose={() => setIsOpen(false)} />
