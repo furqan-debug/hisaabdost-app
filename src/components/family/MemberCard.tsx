@@ -30,11 +30,11 @@ export function MemberCard({
   const getRoleBadgeClass = (role: string) => {
     switch (role) {
       case 'owner':
-        return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30';
+        return 'bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/40 shadow-sm';
       case 'admin':
-        return 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30';
+        return 'bg-blue-500/15 text-blue-900 dark:text-blue-300 border-blue-500/40 shadow-sm';
       default:
-        return 'bg-muted text-muted-foreground border-border';
+        return 'bg-muted/80 text-foreground border-border shadow-sm';
     }
   };
   const displayName = member.profile?.display_name || member.profile?.full_name || 'Unknown User';
