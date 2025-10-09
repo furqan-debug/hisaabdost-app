@@ -54,11 +54,27 @@ export default function Family() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
 
-  // Ensure dialogs are closed on unmount to avoid overlays blocking UI
+  // Force close all dialogs on mount and cleanup any lingering overlays
   useEffect(() => {
+    // Reset all dialog states
+    setLeaveDialogOpen(false);
+    setDeleteDialogOpen(false);
+    setCreateDialogOpen(false);
+    setInviteDialogOpen(false);
+    
+    // Force cleanup any lingering dialog overlays
+    const overlays = document.querySelectorAll('[data-radix-dialog-overlay], [data-radix-alert-dialog-overlay]');
+    overlays.forEach(overlay => overlay.remove());
+    
+    // Reset body styles that might be set by dialogs
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+    
     return () => {
       setLeaveDialogOpen(false);
       setDeleteDialogOpen(false);
+      setCreateDialogOpen(false);
+      setInviteDialogOpen(false);
     };
   }, []);
 
@@ -321,7 +337,7 @@ export default function Family() {
           </div>
 
           {/* Clean Tabs Navigation */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10">
             <TabsList className="w-full sm:w-auto grid grid-cols-3 h-11 bg-muted">
               <TabsTrigger value="overview" className="gap-2">
                 <Activity className="h-4 w-4" />
