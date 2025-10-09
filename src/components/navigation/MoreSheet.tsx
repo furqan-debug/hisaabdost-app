@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { BarChart2, Target, HandCoins, Settings, User, Bell } from "lucide-react";
+import { BarChart2, Target, HandCoins, Settings, Users } from "lucide-react";
 import { useState } from "react";
 import SettingsSidebar from "../SettingsSidebar";
 
@@ -14,6 +14,7 @@ const moreItems = [
   { icon: BarChart2, label: "Analytics", path: "/app/analytics", color: "text-purple-500" },
   { icon: Target, label: "Goals", path: "/app/goals", color: "text-blue-500" },
   { icon: HandCoins, label: "Loans & Udhaar", path: "/app/loans", color: "text-amber-500" },
+  { icon: Users, label: "Family", path: "/app/family", color: "text-green-500" },
   { icon: Settings, label: "Settings", path: null, color: "text-gray-500" },
 ];
 
