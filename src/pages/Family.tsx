@@ -164,23 +164,28 @@ export default function Family() {
       refetch();
     },
     onError: (error: any) => {
-      // Parse the error to provide user-friendly messages
-      const errorMessage = error?.message || '';
-      
-      if (errorMessage.includes('permission') || errorMessage.includes('don\'t have permission')) {
-        toast.error('Only family owners and admins can invite members', {
-          description: 'Ask your family owner to promote you to admin or have them send the invitation.',
+      // Provide clear, human-friendly errors and avoid exposing technical messages
+      const role = currentFamily?.id ? userRoles[currentFamily.id] : undefined;
+
+      // If user is not owner/admin, show a direct permission message
+      if (role && role !== 'owner' && role !== 'admin') {
+        toast.error("You don't have permission to invite members", {
+          description: 'Only family owners and admins can send invitations.',
           duration: 5000,
         });
-      } else if (errorMessage.includes('already exists') || errorMessage.includes('already a member')) {
-        toast.error('This person is already a family member');
-      } else if (errorMessage.includes('invitation already sent') || errorMessage.includes('pending invitation')) {
-        toast.error('An invitation has already been sent to this email');
-      } else if (errorMessage.includes('invalid email')) {
+        console.error('Invite member error (permission):', error);
+        return;
+      }
+
+      const msg = (error?.message as string)?.toLowerCase() || '';
+
+      if (msg.includes('invalid email')) {
         toast.error('Please enter a valid email address');
+      } else if (msg.includes('already exists') || msg.includes('already a member') || msg.includes('pending invitation')) {
+        toast.error('An invitation already exists for this email');
       } else {
         toast.error('Unable to send invitation', {
-          description: errorMessage || 'Please try again or contact support if the problem persists.',
+          description: 'Please try again or contact support if the problem persists.',
         });
       }
       console.error('Invite member error:', error);
