@@ -337,29 +337,43 @@ export default function Family() {
           </div>
 
           {/* Clean Tabs Navigation */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10">
-            <TabsList className="w-full sm:w-auto grid grid-cols-3 h-11 bg-muted">
-              <TabsTrigger value="overview" className="gap-2">
-                <Activity className="h-4 w-4" />
-                <span className="hidden sm:inline">Overview</span>
-              </TabsTrigger>
-              <TabsTrigger value="members" className="gap-2">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Members</span>
-                {currentFamily && familyMembers.length > 0 && (
-                  <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
-                    {familyMembers.length}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="invitations" className="gap-2">
-                <Mail className="h-4 w-4" />
-                <span className="hidden sm:inline">Invitations</span>
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="border-b border-border">
+              <TabsList className="w-full sm:w-auto inline-flex h-12 items-center justify-start rounded-none bg-transparent p-0 gap-6">
+                <TabsTrigger 
+                  value="overview" 
+                  className="gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 font-medium text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                >
+                  <Activity className="h-4 w-4" />
+                  <span className="hidden sm:inline">Overview</span>
+                  <span className="sm:hidden">Stats</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="members" 
+                  className="gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 font-medium text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Members</span>
+                  <span className="sm:hidden">Team</span>
+                  {currentFamily && familyMembers.length > 0 && (
+                    <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                      {familyMembers.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="invitations" 
+                  className="gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 font-medium text-muted-foreground transition-all data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" />
+                  <span className="hidden sm:inline">Invitations</span>
+                  <span className="sm:hidden">Invites</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-6 space-y-6 animate-fade-in">
+            <TabsContent value="overview" className="mt-6 space-y-6 focus-visible:outline-none focus-visible:ring-0">
               {/* Family Stats */}
               {currentFamily && (
                 <FamilyStats
@@ -435,7 +449,7 @@ export default function Family() {
             </TabsContent>
 
             {/* Members Tab */}
-            <TabsContent value="members" className="mt-6 space-y-6 animate-fade-in">
+            <TabsContent value="members" className="mt-6 space-y-6 focus-visible:outline-none focus-visible:ring-0">
               {currentFamily ? (
                 <>
                   <Card>
@@ -609,7 +623,7 @@ export default function Family() {
             </TabsContent>
 
             {/* Invitations Tab */}
-            <TabsContent value="invitations" className="mt-6 space-y-6 animate-fade-in">
+            <TabsContent value="invitations" className="mt-6 space-y-6 focus-visible:outline-none focus-visible:ring-0">
               <PendingInvitations />
               <SentInvitations />
             </TabsContent>
