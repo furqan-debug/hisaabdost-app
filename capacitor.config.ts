@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.hisaabdost.app',
+  appId: 'app.lovable.ccb1b3984ebf47e1ac451522f307f140',
   appName: 'hisaabdost',
   webDir: 'dist',
   bundledWebRuntime: false,
