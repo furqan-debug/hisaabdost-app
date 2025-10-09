@@ -78,7 +78,7 @@ const Navbar = () => {
                     {getDisplayName()}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    @{getUsername()}
+                    {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
