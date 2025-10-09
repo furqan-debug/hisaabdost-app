@@ -251,7 +251,3 @@ This project is private and proprietary.
 - **Project URL**: https://lovable.dev/projects/ccb1b398-4ebf-47e1-ac45-1522f307f140
 - **Supabase Dashboard**: https://supabase.com/dashboard/project/bklfolfivjonzpprytkz
 - **Documentation**: See `/docs` folder for detailed documentation
-
----
-
-Made with ❤️ using [Lovable](https://lovable.dev)
