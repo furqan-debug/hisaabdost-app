@@ -36,6 +36,7 @@ import NotFound from "@/pages/NotFound";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFirstTimeVisit } from "@/hooks/useFirstTimeVisit";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Create QueryClient with optimized settings
 const queryClient = new QueryClient({
@@ -83,6 +84,7 @@ const App = () => {
                       <FamilyProvider>
                         <FinnyProvider>
                       <BrowserRouter>
+                        <ScrollToTop />
                       <Routes>
                         {/* Welcome route for first-time visitors */}
                         <Route path="/welcome" element={<Welcome />} />
