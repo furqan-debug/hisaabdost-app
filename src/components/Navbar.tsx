@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { FamilySwitcher } from "@/components/family/FamilySwitcher";
 import SettingsSidebar from "./SettingsSidebar";
 import { useUserProfile } from "@/hooks/useUserProfile";
 const Navbar = () => {
@@ -53,8 +54,9 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Right: Notification and User Avatar */}
+        {/* Right: Family Switcher, Notification and User Avatar */}
         <div className="flex items-center gap-1 sm:gap-2">
+          <FamilySwitcher />
           <NotificationBell />
           
           <DropdownMenu>
