@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { EnhancedDashboardContent } from "@/components/dashboard/EnhancedDashboardContent";
@@ -40,15 +40,6 @@ const Dashboard = () => {
     formatPercentage,
     setMonthlyIncome
   } = useDashboardData();
-
-  // Ensure any lingering modal overlays are cleared when arriving here
-  useEffect(() => {
-    try {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' } as any));
-      document.body.style.pointerEvents = 'auto';
-      document.body.style.overflow = '';
-    } catch {}
-  }, []);
 
   // Reduced notification triggers - only for established users with significant data
   const shouldSetupNotifications = !isNewUser && !isLoading && !isExpensesLoading && 

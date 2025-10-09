@@ -187,12 +187,10 @@ export default function Family() {
         await switchToPersonal();
       }
 
-      // Close dialog and navigate after a short delay to allow overlays to unmount
+      // Close dialog and navigate immediately
       setLeaveDialogOpen(false);
       setSelectedFamilyId(null);
-      setTimeout(() => {
-        navigate('/app/dashboard', { replace: true });
-      }, 60);
+      navigate('/app/dashboard', { replace: true });
 
       // Fire-and-forget cache updates
       queryClient.invalidateQueries({ queryKey: ['families', user?.id] });
@@ -222,12 +220,10 @@ export default function Family() {
         await switchToPersonal();
       }
 
-      // Close dialog and navigate after a short delay to allow overlays to unmount
+      // Close dialog and navigate immediately
       setDeleteDialogOpen(false);
       setSelectedFamilyId(null);
-      setTimeout(() => {
-        navigate('/app/dashboard', { replace: true });
-      }, 60);
+      navigate('/app/dashboard', { replace: true });
 
       // Fire-and-forget cache updates
       queryClient.invalidateQueries({ queryKey: ['families', user?.id] });
