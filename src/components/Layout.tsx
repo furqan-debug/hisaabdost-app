@@ -22,6 +22,9 @@ const Layout = () => {
   const { showOnboarding } = useOnboarding(user);
   
   useEffect(() => {
+    // Scroll to top on route change
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    
     setPageTransition(true);
     const timer = setTimeout(() => setPageTransition(false), 300);
     return () => clearTimeout(timer);
