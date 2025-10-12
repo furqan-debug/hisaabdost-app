@@ -66,12 +66,12 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime']
+    dedupe: ['react', 'react-dom']
   },
   
   // Optimize dependencies scanning
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'react-router-dom', 'framer-motion', '@tanstack/react-query', 'embla-carousel-react'],
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', '@tanstack/react-query'],
     exclude: ['@capacitor/core']
   },
 }));

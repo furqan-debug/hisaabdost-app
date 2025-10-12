@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { useAllCategories } from "@/hooks/useAllCategories";
 import { cn } from "@/lib/utils";
-import useEmblaCarousel from "embla-carousel-react";
 
 interface CategoryIconPickerProps {
   value: string;
@@ -10,12 +9,6 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
-  const [emblaRef] = useEmblaCarousel({
-    align: 'start',
-    containScroll: 'trimSnaps',
-    dragFree: true,
-    slidesToScroll: 1,
-  });
 
   if (loading) {
     return (
@@ -38,7 +31,15 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           }
         `}</style>
 
-        <div ref={emblaRef} className="overflow-hidden pb-2 py-2">
+        <div 
+          className="overflow-x-auto overflow-y-hidden pb-2 py-2 scroll-smooth"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+            scrollSnapType: "x mandatory",
+          }}
+        >
           <div className="flex flex-row flex-nowrap gap-4 px-1 pb-1">
             {categories.map((cat) => {
               const Icon = cat.icon;
@@ -50,10 +51,11 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
                   type="button"
                   onClick={() => onChange(cat.value)}
                   className={cn(
-                    "relative snap-start flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
-                    "active:scale-90 w-[100px] h-[100px]",
+                    "relative snap-center flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
+                    "active:scale-90 w-[100px] h-[100px] flex-shrink-0",
                     isSelected ? "bg-primary/5 scale-105 shadow-lg" : "bg-card hover:bg-card/80 hover:scale-102",
                   )}
+                  style={{ scrollSnapAlign: "center" }}
                 >
                   <div
                     className={cn(
