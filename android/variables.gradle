@@ -1,4 +1,17 @@
 ext {
+    compileSdkVersion = 35
+    minSdkVersion = 23
+    targetSdkVersion = 35
+
+    // 🔧 Global Java & Kotlin compatibility
+    javaSourceCompatibility = JavaVersion.VERSION_17
+    javaTargetCompatibility = JavaVersion.VERSION_17
+    kotlinJvmTarget = "17"
+}
+
+
+
+ext {
     minSdkVersion = 23
     compileSdkVersion = 35
     targetSdkVersion = 35

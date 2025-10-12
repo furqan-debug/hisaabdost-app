@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "710406899937",
+    "project_id": "hisaab-dost",
+    "storage_bucket": "hisaab-dost.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:710406899937:android:f225b68373a8bc5caa0fa0",
+        "android_client_info": {
+          "package_name": "app.lovable.ccb1b3984ebf47e1ac451522f307f140"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "710406899937-urs5ggj98glflhu31mfao3e26sgola5g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAANHRQyW9q6pu0U9lIJjWr0e--GLMfv_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "710406899937-urs5ggj98glflhu31mfao3e26sgola5g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">hisaabdost</string>
     <string name="title_activity_main">hisaabdost</string>
-    <string name="package_name">com.hisaabdost.app</string>
-    <string name="custom_url_scheme">com.hisaabdost.app</string>
+    <string name="package_name">app.lovable.ccb1b3984ebf47e1ac451522f307f140</string>
+    <string name="custom_url_scheme">app.lovable.ccb1b3984ebf47e1ac451522f307f140</string>
 </resources>
