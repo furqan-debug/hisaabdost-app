@@ -107,7 +107,7 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
         
         const { data, error } = await supabase.functions.invoke('send-push-notification', {
           body: {
-            user_id: user.id,
+            userId: user.id,
             title: "🧪 Test Notification",
             body: "Great! Push notifications are working correctly on your mobile device.",
             data: { 

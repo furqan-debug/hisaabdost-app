@@ -36,10 +36,10 @@ serve(async (req) => {
       );
     }
 
-    // Get user's push tokens
+    // Get user's device tokens
     const { data: tokens, error: tokensError } = await supabase
-      .from("push_tokens")
-      .select("token, platform")
+      .from("user_device_tokens")
+      .select("device_token, platform")
       .eq("user_id", userId);
 
     if (tokensError) {
@@ -69,18 +69,18 @@ serve(async (req) => {
           try {
             // Here you would integrate with Firebase Admin SDK
             // For now, we'll log and store the notification intent
-            console.log("📤 Would send to:", tokenData.token, "platform:", tokenData.platform);
+            console.log("📤 Would send to:", tokenData.device_token, "platform:", tokenData.platform);
             
             results.push({
-              token: tokenData.token,
+              token: tokenData.device_token,
               success: true,
               platform: tokenData.platform,
             });
           } catch (error) {
-            console.error("❌ Error sending to token:", tokenData.token, error);
+            console.error("❌ Error sending to token:", tokenData.device_token, error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             results.push({
-              token: tokenData.token,
+              token: tokenData.device_token,
               success: false,
               error: errorMessage,
               platform: tokenData.platform,
