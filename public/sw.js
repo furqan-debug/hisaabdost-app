@@ -7,8 +7,6 @@ const DATA_CACHE = 'data-cache-v1';
 const APP_SHELL_FILES = [
   '/',
   '/index.html',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json'
 ];
 

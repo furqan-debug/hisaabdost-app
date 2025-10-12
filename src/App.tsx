@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,29 +14,28 @@ import { FinnyProvider } from "@/components/finny/FinnyProvider";
 import { OfflineProvider } from "@/components/offline/OfflineProvider";
 import { AppOpenAd } from "@/components/ads/AppOpenAd";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-// Import pages
-import Auth from "@/pages/Auth";
-import Welcome from "@/pages/Welcome";
-import Dashboard from "@/pages/Dashboard";
-import Analytics from "@/pages/Analytics";
-import AppGuide from "@/pages/AppGuide";
-import Budget from "@/pages/Budget";
-import Expenses from "@/pages/Expenses";
-import Family from "@/pages/Family";
-import FinnyChat from "@/pages/FinnyChat";
-import Goals from "@/pages/Goals";
-import History from "@/pages/History";
-import Loans from "@/pages/Loans";
-import ManageCategories from "@/pages/ManageCategories";
-import ManageFunds from "@/pages/ManageFunds";
-import Settings from "@/pages/Settings";
-
-import NotFound from "@/pages/NotFound";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFirstTimeVisit } from "@/hooks/useFirstTimeVisit";
 import { ScrollToTop } from "@/components/ScrollToTop";
+
+// Lazy load pages for better performance
+const Auth = lazy(() => import("@/pages/Auth"));
+const Welcome = lazy(() => import("@/pages/Welcome"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Analytics = lazy(() => import("@/pages/Analytics"));
+const AppGuide = lazy(() => import("@/pages/AppGuide"));
+const Budget = lazy(() => import("@/pages/Budget"));
+const Expenses = lazy(() => import("@/pages/Expenses"));
+const Family = lazy(() => import("@/pages/Family"));
+const FinnyChat = lazy(() => import("@/pages/FinnyChat"));
+const Goals = lazy(() => import("@/pages/Goals"));
+const History = lazy(() => import("@/pages/History"));
+const Loans = lazy(() => import("@/pages/Loans"));
+const ManageCategories = lazy(() => import("@/pages/ManageCategories"));
+const ManageFunds = lazy(() => import("@/pages/ManageFunds"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Create QueryClient with optimized settings
 const queryClient = new QueryClient({
@@ -85,39 +84,45 @@ const App = () => {
                         <FinnyProvider>
                       <BrowserRouter>
                         <ScrollToTop />
-                      <Routes>
-                        {/* Welcome route for first-time visitors */}
-                        <Route path="/welcome" element={<Welcome />} />
-                        
-                        {/* Public routes */}
-                        <Route path="/auth" element={<Auth />} />
-                        
-                        
-                        {/* Protected routes with Layout */}
-                        <Route path="/app" element={
-                          <ProtectedRoute>
-                            <Layout />
-                          </ProtectedRoute>
+                        <Suspense fallback={
+                          <div className="flex items-center justify-center min-h-screen">
+                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                          </div>
                         }>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="expenses" element={<Expenses />} />
-          <Route path="budget" element={<Budget />} />
-          <Route path="goals" element={<Goals />} />
-          <Route path="loans" element={<Loans />} />
-          <Route path="history" element={<History />} />
-          <Route path="family" element={<Family />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="finny-chat" element={<FinnyChat />} />
-          <Route path="guide" element={<AppGuide />} />
-          <Route path="manage-categories" element={<ManageCategories />} />
-          <Route path="manage-funds" element={<ManageFunds />} />
-                        </Route>
-                        
-                        {/* Default redirects */}
-                        <Route path="/" element={<RootRedirect />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
+                          <Routes>
+                            {/* Welcome route for first-time visitors */}
+                            <Route path="/welcome" element={<Welcome />} />
+                            
+                            {/* Public routes */}
+                            <Route path="/auth" element={<Auth />} />
+                            
+                            
+                            {/* Protected routes with Layout */}
+                            <Route path="/app" element={
+                              <ProtectedRoute>
+                                <Layout />
+                              </ProtectedRoute>
+                            }>
+                              <Route path="dashboard" element={<Dashboard />} />
+                              <Route path="analytics" element={<Analytics />} />
+                              <Route path="expenses" element={<Expenses />} />
+                              <Route path="budget" element={<Budget />} />
+                              <Route path="goals" element={<Goals />} />
+                              <Route path="loans" element={<Loans />} />
+                              <Route path="history" element={<History />} />
+                              <Route path="family" element={<Family />} />
+                              <Route path="settings" element={<Settings />} />
+                              <Route path="finny-chat" element={<FinnyChat />} />
+                              <Route path="guide" element={<AppGuide />} />
+                              <Route path="manage-categories" element={<ManageCategories />} />
+                              <Route path="manage-funds" element={<ManageFunds />} />
+                            </Route>
+                            
+                            {/* Default redirects */}
+                            <Route path="/" element={<RootRedirect />} />
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </Suspense>
                     </BrowserRouter>
                     
                     {/* App Open Ad - inside providers to access React hooks */}
