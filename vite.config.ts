@@ -71,7 +71,7 @@ export default defineConfig(({ mode }) => ({
   
   // Optimize dependencies scanning
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', '@tanstack/react-query'],
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', '@tanstack/react-query', 'embla-carousel-react'],
     exclude: ['@capacitor/core']
   },
 }));
