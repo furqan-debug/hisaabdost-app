@@ -9,6 +9,8 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
+  
+  console.log('CategoryIconPicker: Total categories:', categories.length, categories.map(c => c.label));
 
   if (loading) {
     return (
