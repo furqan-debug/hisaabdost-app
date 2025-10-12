@@ -9,8 +9,6 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
-  
-  console.log('CategoryIconPicker: Total categories:', categories.length, categories.map(c => c.label));
 
   if (loading) {
     return (
@@ -34,14 +32,15 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         `}</style>
 
         <div 
-          className="category-scroll overflow-x-auto overflow-y-hidden pb-2 py-2 scroll-smooth snap-x snap-mandatory cursor-grab active:cursor-grabbing"
+          className="overflow-x-auto overflow-y-hidden pb-2 py-2 scroll-smooth"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
+            scrollSnapType: "x mandatory",
           }}
         >
-          <div className="flex flex-row flex-nowrap gap-4 px-1 pb-1 w-max">
+          <div className="flex flex-row flex-nowrap gap-4 px-1 pb-1">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
