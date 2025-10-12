@@ -5,8 +5,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
-  // ensure all assets load correctly inside Capacitor's WebView:
-  base: "./",
+  // Use absolute path for assets to work correctly on all routes
+  base: "/",
 
   // explicitly target output dir
   build: {
