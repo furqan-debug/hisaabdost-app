@@ -25,25 +25,25 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     <div className="space-y-3">
       <Label>Select Category</Label>
       <div className="relative -mx-4 px-4">
+        <style>{`
+          .category-scroll::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         <div 
-          className="overflow-x-auto overflow-y-hidden pb-2 snap-x snap-mandatory py-2"
+          className="category-scroll overflow-x-auto overflow-y-hidden pb-2 py-2"
           style={{ 
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x',
+            overscrollBehaviorX: 'contain',
+            cursor: 'grab',
+            scrollBehavior: 'smooth',
           }}
         >
-          <style>{`
-            .category-scroll::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
           <div 
-            className="category-scroll grid auto-cols-[100px] gap-4 px-1 pb-1"
-            style={{ 
-              gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
-              gridAutoFlow: 'column',
-            }}
+            className="flex flex-row flex-nowrap gap-4 px-1 pb-1"
           >
             {categories.map((cat) => {
               const Icon = cat.icon;
