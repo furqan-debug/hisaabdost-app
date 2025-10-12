@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { useAllCategories } from "@/hooks/useAllCategories";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,58 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Manual drag scroll logic
+  const handleDragScroll = (e: React.TouchEvent | React.MouseEvent) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    const start = (x: number) => {
+      isDown = true;
+      startX = x - el.offsetLeft;
+      scrollLeft = el.scrollLeft;
+      el.style.cursor = "grabbing";
+    };
+
+    const move = (x: number) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const walk = (x - el.offsetLeft - startX) * 1.5;
+      el.scrollLeft = scrollLeft - walk;
+    };
+
+    const end = () => {
+      isDown = false;
+      el.style.cursor = "grab";
+    };
+
+    if ("touches" in e) {
+      const touchMove = (ev: TouchEvent) => move(ev.touches[0].pageX);
+      const touchEnd = () => {
+        end();
+        document.removeEventListener("touchmove", touchMove);
+        document.removeEventListener("touchend", touchEnd);
+      };
+      start(e.touches[0].pageX);
+      document.addEventListener("touchmove", touchMove);
+      document.addEventListener("touchend", touchEnd);
+    } else {
+      const mouseMove = (ev: MouseEvent) => move(ev.pageX);
+      const mouseUp = () => {
+        end();
+        document.removeEventListener("mousemove", mouseMove);
+        document.removeEventListener("mouseup", mouseUp);
+      };
+      start(e.pageX);
+      document.addEventListener("mousemove", mouseMove);
+      document.addEventListener("mouseup", mouseUp);
+    }
+  };
 
   if (loading) {
     return (
@@ -30,71 +83,65 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
             display: none;
           }
         `}</style>
-        <div 
+
+        <div
+          ref={scrollRef}
           className="category-scroll overflow-x-auto overflow-y-hidden pb-2 py-2"
-          style={{ 
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch',
-            touchAction: 'pan-x',
-            overscrollBehaviorX: 'contain',
-            cursor: 'grab',
-            scrollBehavior: 'smooth',
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+            cursor: "grab",
           }}
+          onMouseDown={handleDragScroll}
+          onTouchStart={handleDragScroll}
         >
-          <div 
-            className="flex flex-row flex-nowrap gap-4 px-1 pb-1"
-          >
+          <div className="flex flex-row flex-nowrap gap-4 px-1 pb-1">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
-              
+
               return (
-                 <button
+                <button
                   key={`${cat.value}-${cat.isCustom}`}
                   type="button"
                   onClick={() => onChange(cat.value)}
                   className={cn(
                     "relative snap-start flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
                     "active:scale-90 w-[100px] h-[100px]",
-                    isSelected 
-                      ? "bg-primary/5 scale-105 shadow-lg" 
-                      : "bg-card hover:bg-card/80 hover:scale-102"
+                    isSelected ? "bg-primary/5 scale-105 shadow-lg" : "bg-card hover:bg-card/80 hover:scale-102",
                   )}
                 >
-                  <div 
+                  <div
                     className={cn(
                       "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
-                      isSelected ? "shadow-md" : ""
+                      isSelected ? "shadow-md" : "",
                     )}
-                    style={{ 
+                    style={{
                       backgroundColor: isSelected ? cat.color : `${cat.color}50`,
                     }}
                   >
                     {Icon ? (
-                      <Icon 
-                        className="w-7 h-7 transition-all duration-300" 
-                        style={{ 
+                      <Icon
+                        className="w-7 h-7 transition-all duration-300"
+                        style={{
                           color: isSelected ? "#fff" : "#333",
-                          strokeWidth: isSelected ? 2.5 : 2
-                        }} 
+                          strokeWidth: isSelected ? 2.5 : 2,
+                        }}
                       />
                     ) : (
-                      <div
-                        className={cn(
-                          "w-5 h-5 rounded-full",
-                          isSelected ? "bg-white" : "bg-foreground/30"
-                        )}
-                      />
+                      <div className={cn("w-5 h-5 rounded-full", isSelected ? "bg-white" : "bg-foreground/30")} />
                     )}
                   </div>
-                  <span className={cn(
-                    "text-[11px] text-center leading-tight line-clamp-2 w-full px-1 transition-all duration-300",
-                    isSelected ? "font-bold" : "font-medium text-foreground/80"
-                  )}
-                  style={{
-                    color: isSelected ? cat.color : undefined
-                  }}>
+                  <span
+                    className={cn(
+                      "text-[11px] text-center leading-tight line-clamp-2 w-full px-1 transition-all duration-300",
+                      isSelected ? "font-bold" : "font-medium text-foreground/80",
+                    )}
+                    style={{
+                      color: isSelected ? cat.color : undefined,
+                    }}
+                  >
                     {cat.label}
                   </span>
                   {cat.isCustom && (
@@ -107,6 +154,7 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
             })}
           </div>
         </div>
+
         {/* Fade indicators */}
         <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background via-background to-transparent pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background to-transparent pointer-events-none" />
