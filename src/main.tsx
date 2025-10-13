@@ -46,7 +46,11 @@ console.log('✅ Root element found, creating React root...');
 try {
   const root = createRoot(rootElement);
   
-  root.render(<App />);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
   
   console.log('✅ App rendered successfully');
 } catch (error) {
