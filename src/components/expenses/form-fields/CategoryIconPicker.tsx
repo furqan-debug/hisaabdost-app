@@ -38,8 +38,15 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     };
   }, [categories]);
 
-  const scrollBy = (delta: number) => {
-    viewportRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  const scrollByCategories = (direction: 'left' | 'right') => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    
+    // Scroll by 3 category items (100px width + 16px gap each)
+    const scrollDistance = (100 + 16) * 3;
+    const delta = direction === 'right' ? scrollDistance : -scrollDistance;
+    
+    viewport.scrollBy({ left: delta, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -57,15 +64,15 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     <div className="space-y-3">
       <Label>Select Category</Label>
       <div className="relative -mx-4 px-4">
-        {/* Native horizontal scroller */}
+        {/* Native horizontal scroller - touch disabled for button control */}
         <div
           ref={viewportRef}
           className={cn(
-            "overflow-x-auto scroll-smooth",
-            "touch-pan-x overscroll-x-contain",
-            "[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "overflow-x-hidden scroll-smooth",
+            "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
             "select-none"
           )}
+          style={{ scrollBehavior: 'smooth' }}
         >
           {/* Items row - forced single line */}
           <div className="flex flex-nowrap gap-4 px-1 py-2">
@@ -127,31 +134,42 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           </div>
         </div>
 
-        {/* Fade edges */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background via-background to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background via-background to-transparent" />
+        {/* Fade edges - wider for better visibility */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background to-transparent" />
 
-        {/* Arrow controls */}
-        {canPrev && (
-          <button
-            type="button"
-            aria-label="Scroll categories left"
-            onClick={() => scrollBy(-260)}
-            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/90 backdrop-blur shadow-md p-2 active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        )}
-        {canNext && (
-          <button
-            type="button"
-            aria-label="Scroll categories right"
-            onClick={() => scrollBy(260)}
-            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/90 backdrop-blur shadow-md p-2 active:scale-95 transition-transform"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
+        {/* Arrow controls - always visible */}
+        <button
+          type="button"
+          disabled={!canPrev}
+          aria-label="Scroll categories left"
+          onClick={() => scrollByCategories('left')}
+          className={cn(
+            "absolute left-2 top-1/2 -translate-y-1/2 z-20",
+            "rounded-full bg-primary/20 backdrop-blur-sm border-2 border-primary/30",
+            "p-3 shadow-lg transition-all duration-200",
+            "active:scale-90",
+            !canPrev && "opacity-40 cursor-not-allowed"
+          )}
+        >
+          <ChevronLeft className="w-6 h-6 text-primary" />
+        </button>
+        
+        <button
+          type="button"
+          disabled={!canNext}
+          aria-label="Scroll categories right"
+          onClick={() => scrollByCategories('right')}
+          className={cn(
+            "absolute right-2 top-1/2 -translate-y-1/2 z-20",
+            "rounded-full bg-primary/20 backdrop-blur-sm border-2 border-primary/30",
+            "p-3 shadow-lg transition-all duration-200",
+            "active:scale-90",
+            !canNext && "opacity-40 cursor-not-allowed"
+          )}
+        >
+          <ChevronRight className="w-6 h-6 text-primary" />
+        </button>
       </div>
     </div>
   );
