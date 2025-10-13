@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+    force: true,
+  },
   build: {
     outDir: "dist",
     cssCodeSplit: true,
