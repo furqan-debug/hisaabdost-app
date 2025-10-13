@@ -68,14 +68,14 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         <div
           ref={viewportRef}
           className={cn(
-            "overflow-x-hidden scroll-smooth",
+            "overflow-x-auto scroll-smooth",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            "select-none"
+            "select-none pointer-events-none"
           )}
           style={{ scrollBehavior: 'smooth' }}
         >
           {/* Items row - forced single line */}
-          <div className="flex flex-nowrap gap-4 px-1 py-2">
+          <div className="flex flex-nowrap gap-4 px-1 py-2 pointer-events-auto">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
