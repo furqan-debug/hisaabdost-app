@@ -39,7 +39,7 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     animate: { 
       scale: 1,
       opacity: 1,
-      transition: { duration: 0.5, ease: "easeOut" }
+      transition: { duration: 0.5 }
     }
   };
 

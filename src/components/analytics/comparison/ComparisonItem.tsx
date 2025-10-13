@@ -36,8 +36,7 @@ export function ComparisonItem({
       y: 0,
       transition: {
         delay: index * 0.05,
-        duration: 0.3,
-        ease: "easeOut"
+        duration: 0.3
       }
     }
   };
