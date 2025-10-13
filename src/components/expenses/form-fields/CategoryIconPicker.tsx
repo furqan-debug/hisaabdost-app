@@ -70,12 +70,12 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           className={cn(
             "overflow-x-auto scroll-smooth",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            "select-none pointer-events-none"
+            "select-none [touch-action:none]"
           )}
           style={{ scrollBehavior: 'smooth' }}
         >
           {/* Items row - forced single line */}
-          <div className="flex flex-nowrap gap-4 px-1 py-2 pointer-events-auto">
+          <div className="flex flex-nowrap gap-4 px-1 py-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
@@ -138,18 +138,17 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background to-transparent" />
 
-        {/* Arrow controls - always visible */}
+        {/* Arrow controls - always visible and enabled */}
         <button
           type="button"
-          disabled={!canPrev}
           aria-label="Scroll categories left"
           onClick={() => scrollByCategories('left')}
           className={cn(
             "absolute left-2 top-1/2 -translate-y-1/2 z-20",
             "rounded-full bg-primary/20 backdrop-blur-sm border-2 border-primary/30",
             "p-3 shadow-lg transition-all duration-200",
-            "active:scale-90",
-            !canPrev && "opacity-40 cursor-not-allowed"
+            "active:scale-90 hover:bg-primary/30",
+            !canPrev && "opacity-40"
           )}
         >
           <ChevronLeft className="w-6 h-6 text-primary" />
@@ -157,15 +156,14 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         
         <button
           type="button"
-          disabled={!canNext}
           aria-label="Scroll categories right"
           onClick={() => scrollByCategories('right')}
           className={cn(
             "absolute right-2 top-1/2 -translate-y-1/2 z-20",
             "rounded-full bg-primary/20 backdrop-blur-sm border-2 border-primary/30",
             "p-3 shadow-lg transition-all duration-200",
-            "active:scale-90",
-            !canNext && "opacity-40 cursor-not-allowed"
+            "active:scale-90 hover:bg-primary/30",
+            !canNext && "opacity-40"
           )}
         >
           <ChevronRight className="w-6 h-6 text-primary" />
