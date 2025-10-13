@@ -13,18 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAllCategories } from "@/hooks/useAllCategories";
+import { CategorySelect } from "@/components/expenses/category/CategorySelect";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -60,10 +53,9 @@ export function GoalForm({ open, onOpenChange, goal }: GoalFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { categories } = useAllCategories();
   const { activeFamilyId } = useFamilyContext();
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<GoalFormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GoalFormData>({
     resolver: zodResolver(goalSchema),
     defaultValues: goal ? {
       title: goal.title,
@@ -164,34 +156,11 @@ export function GoalForm({ open, onOpenChange, goal }: GoalFormProps) {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select
-              defaultValue={goal?.category}
-              onValueChange={(value) => setValue("category", value, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent className="touch-scroll-container max-h-[40vh]">
-                {categories.map((cat) => (
-                  <SelectItem key={`${cat.value}-${cat.isCustom}`} value={cat.value}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <span>{cat.label}</span>
-                      {cat.isCustom && (
-                        <span className="text-xs px-1 py-0.5 bg-primary/10 text-primary rounded">
-                          Custom
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div>
+            <CategorySelect
+              value={watch("category") || ""}
+              onChange={(value) => setValue("category", value, { shouldValidate: true })}
+            />
             {errors.category && (
               <p className="text-sm text-destructive">{errors.category.message}</p>
             )}

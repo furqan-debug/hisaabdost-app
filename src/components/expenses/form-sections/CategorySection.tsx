@@ -1,5 +1,5 @@
 import { ExpenseFormData } from "@/hooks/useExpenseForm";
-import { CategoryIconPicker } from "../form-fields/CategoryIconPicker";
+import { CategorySelect } from "../category/CategorySelect";
 import { DateField } from "../form-fields/DateField";
 
 interface CategorySectionProps {
@@ -11,12 +11,10 @@ export function CategorySection({
   formData,
   onFieldChange
 }: CategorySectionProps) {
-  console.log('CategorySection rendering with CategoryIconPicker');
-  
   return (
-    <div className="space-y-4 px-[2px]">
+    <div className="space-y-4">
       <DateField value={formData.date} onChange={value => onFieldChange('date', value)} />
-      <CategoryIconPicker value={formData.category} onChange={value => onFieldChange('category', value)} />
+      <CategorySelect value={formData.category} onChange={value => onFieldChange('category', value)} />
     </div>
   );
 }
