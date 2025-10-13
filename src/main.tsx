@@ -7,7 +7,7 @@ import './index.css';
 console.log('🚀 Starting React application...');
 
 // Register Service Worker for offline functionality
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       console.log('🔧 Registering Service Worker...');
@@ -30,8 +30,8 @@ if ('serviceWorker' in navigator) {
       console.error('❌ Service Worker registration failed:', error);
     }
   });
-} else {
-  console.warn('⚠️ Service Worker not supported in this browser');
+} else if ('serviceWorker' in navigator) {
+  console.info('ℹ️ Skipping Service Worker registration in development');
 }
 
 const rootElement = document.getElementById("root");

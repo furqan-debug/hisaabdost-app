@@ -4,7 +4,9 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
+  // ✅ Base path: use "./" so the app runs correctly inside Capacitor (Android/iOS)
   base: "./",
+
   build: {
     outDir: "dist",
     cssCodeSplit: true,
@@ -12,30 +14,35 @@ export default defineConfig(({ mode }) => ({
     minify: "terser",
     terserOptions: {
       compress: {
-        drop_console: mode === "production",
+        drop_console: mode === "production", // keep logs in dev
         drop_debugger: true,
       },
     },
-    // ✅ Fix: merge all chunks to avoid React loading order issues
+    // ✅ Ensures React chunks load in correct order
     rollupOptions: {
       output: {
         manualChunks: undefined,
       },
     },
   },
+
   server: {
     host: "::",
     port: 8080,
   },
+
   plugins: [
     react(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom"],
   },
+
   optimizeDeps: {
     include: [
       "react",
