@@ -13,7 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-    },
+< 1859b046ff6e882390322fb85a02eec9af858a3c
   },
   server: {
     host: "::",
