@@ -26,11 +26,11 @@ export function UserSection({
       <div className="flex items-center mb-4">
         <Avatar className="h-10 w-10 mr-3">
           <AvatarImage 
-            src="https://images.unsplash.com/photo-1501286353178-1ec881214838?w=100&h=100&fit=crop&crop=face" 
+            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
             alt={user?.email || "User"} 
           />
           <AvatarFallback className="bg-primary/10 text-primary">
-            🐵
+            👤
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

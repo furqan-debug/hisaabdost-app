@@ -25,11 +25,11 @@ const MessageAvatar = React.memo(({ isUser }: MessageAvatarProps) => {
         {isUser ? (
           <>
             <AvatarImage 
-              src="https://images.unsplash.com/photo-1501286353178-1ec881214838?w=100&h=100&fit=crop&crop=face" 
+              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
               alt="User Avatar" 
             />
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-              🐵
+              👤
             </AvatarFallback>
           </>
         ) : (
