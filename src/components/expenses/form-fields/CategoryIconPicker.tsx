@@ -27,6 +27,7 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
       setCanPrev(scrollLeft > EPSILON);
       setCanNext(scrollLeft < scrollWidth - clientWidth - EPSILON);
       setHasOverflow(scrollWidth > clientWidth + EPSILON);
+      console.debug('[CategoryIconPicker] update', { scrollLeft, clientWidth, scrollWidth, canPrev: scrollLeft > EPSILON, canNext: scrollLeft < scrollWidth - clientWidth - EPSILON, hasOverflow: scrollWidth > clientWidth + EPSILON, categoriesCount: categories.length });
     };
 
     el.scrollTo({ left: 0 });
@@ -63,6 +64,8 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     const delta = sign * page * step;
     const maxLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
     const target = clamp(viewport.scrollLeft + delta, 0, maxLeft);
+
+    console.debug('[CategoryIconPicker] click', { direction, step, visible, page, delta, maxLeft, from: viewport.scrollLeft, to: target, counts: categories.length });
 
     viewport.scrollTo({ left: target, behavior: 'smooth' });
     // Update edges after the smooth scroll settles
