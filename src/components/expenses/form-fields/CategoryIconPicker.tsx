@@ -38,15 +38,24 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     };
   }, [categories]);
 
+  const updateEdges = () => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const { scrollLeft, clientWidth, scrollWidth } = el;
+    setCanPrev(scrollLeft > 2);
+    setCanNext(scrollLeft + clientWidth < scrollWidth - 2);
+  };
+
   const scrollByCategories = (direction: 'left' | 'right') => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    
-    // Scroll by 3 category items (100px width + 16px gap each)
-    const scrollDistance = (100 + 16) * 3;
-    const delta = direction === 'right' ? scrollDistance : -scrollDistance;
-    
+
+    const base = viewport.clientWidth > 0 ? Math.max(240, Math.round(viewport.clientWidth * 0.9)) : (100 + 16) * 3;
+    const delta = direction === 'right' ? base : -base;
+
     viewport.scrollBy({ left: delta, behavior: 'smooth' });
+    // Update edges after the smooth scroll settles
+    window.setTimeout(updateEdges, 320);
   };
 
   if (loading) {
@@ -70,12 +79,12 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           className={cn(
             "overflow-x-auto scroll-smooth",
             "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            "select-none [touch-action:none]"
+            "select-none touch-pan-x"
           )}
           style={{ scrollBehavior: 'smooth' }}
         >
           {/* Items row - forced single line */}
-          <div className="flex flex-nowrap gap-4 px-1 py-2">
+          <div className="inline-flex w-max flex-nowrap gap-4 px-1 py-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
