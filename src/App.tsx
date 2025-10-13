@@ -71,12 +71,11 @@ const App = () => {
   console.log('🚀 App component rendering with full functionality...');
   
   return (
-    <>
+    <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <TooltipProvider>
             <AuthProvider>
-              <ErrorBoundary>
                 <OfflineProvider>
                   <CurrencyProvider>
                     <MonthProvider>
@@ -138,13 +137,12 @@ const App = () => {
                     </FamilyProvider>
                   </MonthProvider>
                 </CurrencyProvider>
-              </OfflineProvider>
-              </ErrorBoundary>
+                </OfflineProvider>
             </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </>
+    </ErrorBoundary>
   );
 };
 
