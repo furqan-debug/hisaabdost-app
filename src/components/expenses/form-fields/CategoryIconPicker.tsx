@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { useAllCategories } from "@/hooks/useAllCategories";
 import { cn } from "@/lib/utils";
-import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CategoryIconPickerProps {
   value: string;
@@ -10,14 +11,36 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
-  
-  const [emblaRef] = useEmblaCarousel({
-    align: 'start',
-    dragFree: true,
-    containScroll: 'trimSnaps',
-    skipSnaps: false,
-    watchDrag: true,
-  });
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const { scrollLeft, clientWidth, scrollWidth } = el;
+      setCanPrev(scrollLeft > 2);
+      setCanNext(scrollLeft + clientWidth < scrollWidth - 2);
+    };
+
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      ro.disconnect();
+    };
+  }, [categories]);
+
+  const scrollBy = (delta: number) => {
+    viewportRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  };
 
   if (loading) {
     return (
@@ -34,8 +57,18 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     <div className="space-y-3">
       <Label>Select Category</Label>
       <div className="relative -mx-4 px-4">
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-4 px-1 py-2">
+        {/* Native horizontal scroller */}
+        <div
+          ref={viewportRef}
+          className={cn(
+            "overflow-x-auto scroll-smooth",
+            "touch-pan-x overscroll-x-contain",
+            "[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+            "select-none"
+          )}
+        >
+          {/* Items row - forced single line */}
+          <div className="flex flex-nowrap gap-4 px-1 py-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
@@ -46,7 +79,7 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
                   type="button"
                   onClick={() => onChange(cat.value)}
                   className={cn(
-                    "relative flex-shrink-0 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
+                    "snap-start relative flex-shrink-0 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
                     "active:scale-90 w-[100px] h-[100px]",
                     isSelected ? "bg-primary/5 scale-105 shadow-lg" : "bg-card hover:bg-card/80 hover:scale-102",
                   )}
@@ -94,9 +127,31 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           </div>
         </div>
 
-        {/* Fade indicators */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background via-background to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background via-background to-transparent pointer-events-none" />
+        {/* Fade edges */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background via-background to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background via-background to-transparent" />
+
+        {/* Arrow controls */}
+        {canPrev && (
+          <button
+            type="button"
+            aria-label="Scroll categories left"
+            onClick={() => scrollBy(-260)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/90 backdrop-blur shadow-md p-2 active:scale-95 transition-transform"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+        {canNext && (
+          <button
+            type="button"
+            aria-label="Scroll categories right"
+            onClick={() => scrollBy(260)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 rounded-full bg-background/90 backdrop-blur shadow-md p-2 active:scale-95 transition-transform"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
