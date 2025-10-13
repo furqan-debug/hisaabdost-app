@@ -52,26 +52,26 @@ export function CategorySelectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>Select Category</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+          <DialogTitle className="text-center">Select Category</DialogTitle>
         </DialogHeader>
 
-        <div className="px-6 py-3 border-b">
+        <div className="px-6 py-4 border-b shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               placeholder="Search categories..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11"
             />
           </div>
         </div>
 
         {recentCategories.length > 0 && !query && (
-          <div className="px-6 py-3 border-b">
-            <p className="text-sm font-medium mb-2 text-muted-foreground">Recent</p>
+          <div className="px-6 py-4 border-b shrink-0">
+            <p className="text-sm font-medium mb-3 text-muted-foreground">Recent</p>
             <div className="flex flex-wrap gap-2">
               {recentCategories.map((cat) => {
                 if (!cat) return null;
@@ -82,13 +82,13 @@ export function CategorySelectModal({
                     type="button"
                     onClick={() => handleSelect(cat.value)}
                     className={cn(
-                      "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-all",
+                      "inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm border transition-all",
                       "hover:border-primary/50 hover:bg-accent",
-                      value === cat.value && "border-primary bg-accent"
+                      value === cat.value && "border-primary bg-accent ring-2 ring-primary/20"
                     )}
                   >
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0"
                       style={{ backgroundColor: cat.color }}
                     >
                       {Icon && <Icon size={12} />}
@@ -101,7 +101,7 @@ export function CategorySelectModal({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -111,7 +111,7 @@ export function CategorySelectModal({
               No categories found
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 auto-rows-fr">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {filtered.map((cat) => (
                 <CategoryTile
                   key={cat.value}
@@ -124,10 +124,10 @@ export function CategorySelectModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t">
+        <div className="px-6 py-4 border-t shrink-0">
           <Button
             variant="outline"
-            className="w-full"
+            className="w-full h-11"
             onClick={() => {
               onOpenChange(false);
               navigate('/app/manage-categories');

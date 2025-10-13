@@ -16,28 +16,28 @@ export function CategoryTile({ option, selected, onClick }: CategoryTileProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center justify-start gap-2 p-3 rounded-lg border transition-all w-full h-full min-h-[120px]",
-        "hover:border-primary/50 hover:bg-accent/50",
-        selected && "border-primary ring-2 ring-primary/20 bg-accent"
+        "relative flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all w-full aspect-square",
+        "hover:border-primary/50 hover:bg-accent/50 hover:scale-105",
+        selected && "border-primary ring-2 ring-primary/20 bg-accent scale-105"
       )}
     >
       <div
-        className="w-12 h-12 rounded-full flex items-center justify-center text-white flex-shrink-0"
+        className="w-14 h-14 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-sm"
         style={{ backgroundColor: option.color }}
       >
         {Icon ? (
-          <Icon size={24} />
+          <Icon size={26} strokeWidth={2} />
         ) : (
-          <span className="text-lg font-semibold">
+          <span className="text-xl font-semibold">
             {option.label.charAt(0).toUpperCase()}
           </span>
         )}
       </div>
-      <span className="text-xs text-center line-clamp-2 w-full px-1">
+      <span className="text-xs font-medium text-center line-clamp-2 w-full leading-tight">
         {option.label}
       </span>
       {option.isCustom && (
-        <Star size={12} className="absolute top-2 right-2 fill-yellow-400 text-yellow-400" />
+        <Star size={14} className="absolute top-2 right-2 fill-yellow-400 text-yellow-400" />
       )}
     </button>
   );
