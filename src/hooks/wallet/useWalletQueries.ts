@@ -21,7 +21,9 @@ export function useWalletQueries(selectedMonth?: Date) {
     queryFn: async () => {
       if (!user) return [];
 
-      console.log('🔄 Fetching wallet additions for selected month:', firstDayOfMonth, "Mode:", isPersonalMode ? 'personal' : `family: ${activeFamilyId}`);
+      if (import.meta.env.DEV) {
+        console.log('🔄 Fetching wallet additions for selected month:', firstDayOfMonth, "Mode:", isPersonalMode ? 'personal' : `family: ${activeFamilyId}`);
+      }
       
       // Execute query based on family context - separate queries to avoid TS type issues
       let data: any = null;
@@ -73,16 +75,17 @@ export function useWalletQueries(selectedMonth?: Date) {
         return [];
       }
 
-      console.log(`✅ Found ${data?.length || 0} wallet additions for selected month`);
+      if (import.meta.env.DEV) {
+        console.log(`✅ Found ${data?.length || 0} wallet additions for selected month`);
+      }
       return data as WalletAddition[];
     },
     enabled: !!user,
-    staleTime: 1000 * 30, // 30 seconds - reduce excessive polling
-    gcTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000, // Increased to 5 seconds to reduce load
+    staleTime: 1000 * 60 * 2, // 2 minutes - mobile optimized
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true
   });
 
   // Query all wallet additions with optimized polling
@@ -91,7 +94,9 @@ export function useWalletQueries(selectedMonth?: Date) {
     queryFn: async () => {
       if (!user) return [];
 
-      console.log('🔄 Fetching all wallet additions');
+      if (import.meta.env.DEV) {
+        console.log('🔄 Fetching all wallet additions');
+      }
       
       // Execute query based on family context - separate queries to avoid TS type issues
       let data: any = null;
@@ -137,16 +142,17 @@ export function useWalletQueries(selectedMonth?: Date) {
         return [];
       }
 
-      console.log(`✅ Found ${data?.length || 0} total wallet additions`);
+      if (import.meta.env.DEV) {
+        console.log(`✅ Found ${data?.length || 0} total wallet additions`);
+      }
       return data as WalletAddition[];
     },
     enabled: !!user,
-    staleTime: 1000 * 60, // 1 minute - all additions change less frequently
+    staleTime: 1000 * 60 * 5, // 5 minutes - all additions change less frequently
     gcTime: 1000 * 60 * 10, // 10 minutes
-    refetchOnWindowFocus: true,
-    refetchOnMount: false, // Only fetch if stale
-    refetchOnReconnect: true,
-    refetchInterval: 10000, // Increased to 10 seconds to reduce load
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true
   });
 
   // Calculate total additions

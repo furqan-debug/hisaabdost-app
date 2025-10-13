@@ -18,6 +18,8 @@ import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFirstTimeVisit } from "@/hooks/useFirstTimeVisit";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { QUERY_CONFIG } from "@/lib/queryConfig";
+import { OptimizedLoadingScreen } from "@/components/shared/OptimizedLoadingScreen";
 
 // Lazy load pages for better performance
 const Auth = lazy(() => import("@/pages/Auth"));
@@ -37,14 +39,13 @@ const ManageFunds = lazy(() => import("@/pages/ManageFunds"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-// Create QueryClient with optimized settings
+// Create QueryClient with optimized settings for mobile
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      staleTime: 1000 * 60 * 2, // 2 minutes
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      ...QUERY_CONFIG.DEFAULT_OPTIONS,
+      staleTime: QUERY_CONFIG.STALE_TIME.EXPENSES,
+      gcTime: QUERY_CONFIG.GC_TIME.DEFAULT,
     },
   },
 });
@@ -83,11 +84,7 @@ const App = () => {
                         <FinnyProvider>
                       <BrowserRouter>
                         <ScrollToTop />
-                        <Suspense fallback={
-                          <div className="flex items-center justify-center min-h-screen">
-                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                          </div>
-                        }>
+                        <Suspense fallback={<OptimizedLoadingScreen />}>
                           <Routes>
                             {/* Welcome route for first-time visitors */}
                             <Route path="/welcome" element={<Welcome />} />

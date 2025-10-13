@@ -36,7 +36,9 @@ export function useDashboardData(overrideMonth?: Date) {
   // Update local income state when data is fetched
   useEffect(() => {
     if (incomeData && !isIncomeLoading) {
-      console.log("Updating monthly income state:", incomeData.monthlyIncome);
+      if (import.meta.env.DEV) {
+        console.log("Updating monthly income state:", incomeData.monthlyIncome);
+      }
       setMonthlyIncome(incomeData.monthlyIncome);
       
       // Also update the month context
