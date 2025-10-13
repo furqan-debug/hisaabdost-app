@@ -37,10 +37,16 @@ serve(async (req) => {
     }
 
     // Get user's device tokens
-    const { data: tokens, error: tokensError } = await supabase
+    let tokensQuery = supabase
       .from("user_device_tokens")
-      .select("device_token, platform")
-      .eq("user_id", userId);
+      .select("device_token, platform");
+    
+    // If userId is "all", fetch all tokens; otherwise filter by user_id
+    if (userId !== "all") {
+      tokensQuery = tokensQuery.eq("user_id", userId);
+    }
+    
+    const { data: tokens, error: tokensError } = await tokensQuery;
 
     if (tokensError) {
       console.error("❌ Error fetching push tokens:", tokensError);
