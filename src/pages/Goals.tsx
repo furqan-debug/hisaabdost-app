@@ -123,7 +123,8 @@ export default function Goals() {
 
   return (
     <div className="min-h-screen bg-background">
-        <div className="container mx-auto p-4 md:p-6 space-y-6 pb-24 md:pb-8">
+      <div className="container mx-auto px-4 py-6 md:px-6 md:py-8 max-w-5xl">
+        <div className="space-y-8 pb-24 md:pb-8">
           <GoalsHeader onCreateGoal={handleCreateGoal} />
 
           {goals?.length === 0 ? (
@@ -141,12 +142,13 @@ export default function Goals() {
             />
           )}
         </div>
-        
-        <GoalForm 
-          open={showGoalForm} 
-          onOpenChange={setShowGoalForm} 
-          goal={selectedGoal} 
-        />
       </div>
+        
+      <GoalForm 
+        open={showGoalForm} 
+        onOpenChange={setShowGoalForm} 
+        goal={selectedGoal} 
+      />
+    </div>
   );
 }

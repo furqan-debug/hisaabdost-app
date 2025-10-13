@@ -14,20 +14,19 @@ interface GoalsHeaderProps {
 
 export function GoalsHeader({ onCreateGoal }: GoalsHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <PageHeader variant="simple">
-        <PageHeaderTitle gradient>Goals</PageHeaderTitle>
-        <PageHeaderDescription>Track your financial targets</PageHeaderDescription>
+        <PageHeaderTitle gradient>Financial Goals</PageHeaderTitle>
+        <PageHeaderDescription>Track and achieve your savings targets</PageHeaderDescription>
       </PageHeader>
       <PageHeaderActions>
         <Button 
           onClick={onCreateGoal} 
-          size="sm"
-          variant="outline"
-          className="gap-2"
+          size="default"
+          className="gap-2 shadow-sm"
         >
           <Plus className="h-4 w-4" />
-          Add Goal
+          New Goal
         </Button>
       </PageHeaderActions>
     </div>

@@ -35,7 +35,7 @@ export function GoalsGrid({
   syncGoalProgress 
 }: GoalsGridProps) {
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
       {goals.map((goal) => {
         // Sync goal progress with calculated savings
         syncGoalProgress(goal);
