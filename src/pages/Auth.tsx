@@ -7,8 +7,6 @@ import { ArrowLeft, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
-import { PhoneLoginForm } from "@/components/auth/PhoneLoginForm";
-import { PhoneOtpForm } from "@/components/auth/PhoneOtpForm";
 import { VerificationForm } from "@/components/auth/VerificationForm";
 import { PasswordResetCodeForm } from "@/components/auth/PasswordResetCodeForm";
 import { SetNewPasswordForm } from "@/components/auth/SetNewPasswordForm";
@@ -21,12 +19,9 @@ const Auth = () => {
   const resendOtp = auth?.resendOtp ?? (async () => {});
   const sendPasswordResetCode = auth?.sendPasswordResetCode ?? (async () => {});
   
-  const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [isSignUp, setIsSignUp] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
-  const [showPhoneOtp, setShowPhoneOtp] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
-  const [userPhone, setUserPhone] = useState("");
   
   // Password reset states
   const [passwordResetStep, setPasswordResetStep] = useState<"email" | "code" | "newPassword" | "success" | null>(null);
@@ -80,12 +75,9 @@ const Auth = () => {
   };
 
   const resetToLogin = () => {
-    setAuthMethod("email");
     setIsSignUp(false);
     setShowVerification(false);
-    setShowPhoneOtp(false);
     setVerificationEmail("");
-    setUserPhone("");
     setPasswordResetStep(null);
     setPasswordResetEmail("");
     setPasswordResetCode("");
@@ -114,12 +106,10 @@ const Auth = () => {
 
   const getCardTitle = () => {
     if (showVerification) return "Verify Email";
-    if (showPhoneOtp) return "Verify Phone";
     if (passwordResetStep === "email") return "Reset Password";
     if (passwordResetStep === "code") return "Enter Code";
     if (passwordResetStep === "newPassword") return "Set New Password";
     if (passwordResetStep === "success") return "Success!";
-    if (authMethod === "phone") return isSignUp ? "Create Account" : "Sign In";
     if (isSignUp) return "Create Account";
     return "Welcome Back";
   };
@@ -129,7 +119,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <AnimatePresence mode="wait">
           <motion.div 
-            key={showVerification ? "verification" : showPhoneOtp ? "phone-otp" : passwordResetStep ? `reset-${passwordResetStep}` : `${authMethod}-${isSignUp ? "signup" : "login"}`} 
+            key={showVerification ? "verification" : passwordResetStep ? `reset-${passwordResetStep}` : isSignUp ? "signup" : "login"}
             initial="hidden" 
             animate="visible" 
             exit="exit" 
@@ -146,30 +136,6 @@ const Auth = () => {
 
               {/* Card Content */}
               <CardContent className="px-8 pb-8">
-                {/* Auth Method Toggle */}
-                {!showVerification && !showPhoneOtp && !passwordResetStep && (
-                  <div className="flex rounded-lg bg-muted p-1 mb-6">
-                    <Button
-                      type="button"
-                      variant={authMethod === "email" ? "default" : "ghost"}
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setAuthMethod("email")}
-                    >
-                      Email
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={authMethod === "phone" ? "default" : "ghost"}
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setAuthMethod("phone")}
-                    >
-                      Phone
-                    </Button>
-                  </div>
-                )}
-
                 {showVerification ? (
                   <VerificationForm 
                     email={verificationEmail} 
@@ -179,12 +145,6 @@ const Auth = () => {
                       setShowVerification(false);
                       setVerificationEmail("");
                     }} 
-                  />
-                ) : showPhoneOtp ? (
-                  <PhoneOtpForm 
-                    phone={userPhone}
-                    onBack={() => setShowPhoneOtp(false)}
-                    onSuccess={resetToLogin}
                   />
                 ) : passwordResetStep === "email" ? (
                   <ForgotPasswordForm 
@@ -212,7 +172,7 @@ const Auth = () => {
                       Redirecting you to login...
                     </p>
                   </div>
-                ) : authMethod === "email" && isSignUp ? (
+                ) : isSignUp ? (
                   <SignUpForm 
                     onLoginClick={() => setIsSignUp(false)} 
                     onSignUpSuccess={email => {
@@ -220,20 +180,12 @@ const Auth = () => {
                       setShowVerification(true);
                     }} 
                   />
-                ) : authMethod === "email" && !isSignUp ? (
+                ) : (
                   <LoginForm 
                     onForgotPassword={() => setPasswordResetStep("email")} 
                     onSignUpClick={() => setIsSignUp(true)} 
                   />
-                ) : authMethod === "phone" ? (
-                  <PhoneLoginForm 
-                    onOtpSent={(phone) => {
-                      setUserPhone(phone);
-                      setShowPhoneOtp(true);
-                    }}
-                    onEmailClick={() => setAuthMethod("email")}
-                  />
-                ) : null}
+                )}
               </CardContent>
             </Card>
           </motion.div>
