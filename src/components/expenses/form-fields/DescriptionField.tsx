@@ -19,7 +19,7 @@ export function DescriptionField({ value, onChange, label = "Description" }: Des
         onChange={(e) => onChange(e.target.value)}
         placeholder="What did you spend on?"
         required
-        autoComplete="off"
+        autoComplete="on"
         autoCorrect="on"
         autoCapitalize="words"
         spellCheck={true}
