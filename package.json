@@ -6,12 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rmdir /s /q node_modules && rmdir /s /q dist && npm cache clean --force && npm install",
-    "validate": "node scripts/validate.js",
-    "cap:sync": "npx cap sync android",
-    "cap:run:android": "npx cap run android",
-    "cap:build:android": "npx cap build android"
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview"
+    "lint": "eslint .",
   },
   "dependencies": {
     "@capacitor-community/admob": "^7.0.3",
