@@ -14,6 +14,9 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
+  const EPSILON = 6;
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -21,10 +24,12 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
 
     const update = () => {
       const { scrollLeft, clientWidth, scrollWidth } = el;
-      setCanPrev(scrollLeft > 2);
-      setCanNext(scrollLeft + clientWidth < scrollWidth - 2);
+      setCanPrev(scrollLeft > EPSILON);
+      setCanNext(scrollLeft < scrollWidth - clientWidth - EPSILON);
+      setHasOverflow(scrollWidth > clientWidth + EPSILON);
     };
 
+    el.scrollTo({ left: 0 });
     update();
     el.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
@@ -42,20 +47,26 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     const el = viewportRef.current;
     if (!el) return;
     const { scrollLeft, clientWidth, scrollWidth } = el;
-    setCanPrev(scrollLeft > 2);
-    setCanNext(scrollLeft + clientWidth < scrollWidth - 2);
+    setCanPrev(scrollLeft > EPSILON);
+    setCanNext(scrollLeft < scrollWidth - clientWidth - EPSILON);
+    setHasOverflow(scrollWidth > clientWidth + EPSILON);
   };
 
   const scrollByCategories = (direction: 'left' | 'right') => {
     const viewport = viewportRef.current;
     if (!viewport) return;
 
-    const base = viewport.clientWidth > 0 ? Math.max(240, Math.round(viewport.clientWidth * 0.9)) : (100 + 16) * 3;
-    const delta = direction === 'right' ? base : -base;
+    const step = 100 + 16; // item width + gap
+    const visible = Math.max(1, Math.floor((viewport.clientWidth - 16) / step));
+    const page = Math.max(1, visible - 1);
+    const sign = direction === 'right' ? 1 : -1;
+    const delta = sign * page * step;
+    const maxLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const target = clamp(viewport.scrollLeft + delta, 0, maxLeft);
 
-    viewport.scrollBy({ left: delta, behavior: 'smooth' });
+    viewport.scrollTo({ left: target, behavior: 'smooth' });
     // Update edges after the smooth scroll settles
-    window.setTimeout(updateEdges, 320);
+    window.setTimeout(updateEdges, 400);
   };
 
   if (loading) {
@@ -84,7 +95,7 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
           style={{ scrollBehavior: 'smooth' }}
         >
           {/* Items row - forced single line */}
-          <div className="inline-flex w-max flex-nowrap gap-4 px-1 py-2">
+          <div className="inline-flex w-max flex-nowrap gap-4 px-2 pe-6 py-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
@@ -144,8 +155,12 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         </div>
 
         {/* Fade edges - wider for better visibility */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background to-transparent" />
+        {hasOverflow && (
+          <>
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background via-background to-transparent" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background to-transparent" />
+          </>
+        )}
 
         {/* Arrow controls - always visible and enabled */}
         <button
