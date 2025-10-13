@@ -1,7 +1,7 @@
-import { useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { useAllCategories } from "@/hooks/useAllCategories";
 import { cn } from "@/lib/utils";
+import useEmblaCarousel from "embla-carousel-react";
 
 interface CategoryIconPickerProps {
   value: string;
@@ -10,58 +10,14 @@ interface CategoryIconPickerProps {
 
 export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps) {
   const { categories, loading } = useAllCategories();
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Manual drag scroll logic
-  const handleDragScroll = (e: React.TouchEvent | React.MouseEvent) => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let isDown = false;
-    let startX = 0;
-    let scrollLeft = 0;
-
-    const start = (x: number) => {
-      isDown = true;
-      startX = x - el.offsetLeft;
-      scrollLeft = el.scrollLeft;
-      el.style.cursor = "grabbing";
-    };
-
-    const move = (x: number) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const walk = (x - el.offsetLeft - startX) * 1.5;
-      el.scrollLeft = scrollLeft - walk;
-    };
-
-    const end = () => {
-      isDown = false;
-      el.style.cursor = "grab";
-    };
-
-    if ("touches" in e) {
-      const touchMove = (ev: TouchEvent) => move(ev.touches[0].pageX);
-      const touchEnd = () => {
-        end();
-        document.removeEventListener("touchmove", touchMove);
-        document.removeEventListener("touchend", touchEnd);
-      };
-      start(e.touches[0].pageX);
-      document.addEventListener("touchmove", touchMove);
-      document.addEventListener("touchend", touchEnd);
-    } else {
-      const mouseMove = (ev: MouseEvent) => move(ev.pageX);
-      const mouseUp = () => {
-        end();
-        document.removeEventListener("mousemove", mouseMove);
-        document.removeEventListener("mouseup", mouseUp);
-      };
-      start(e.pageX);
-      document.addEventListener("mousemove", mouseMove);
-      document.addEventListener("mouseup", mouseUp);
-    }
-  };
+  
+  const [emblaRef] = useEmblaCarousel({
+    align: 'start',
+    dragFree: true,
+    containScroll: 'trimSnaps',
+    skipSnaps: false,
+    watchDrag: true,
+  });
 
   if (loading) {
     return (
@@ -78,25 +34,8 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
     <div className="space-y-3">
       <Label>Select Category</Label>
       <div className="relative -mx-4 px-4">
-        <style>{`
-          .category-scroll::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-
-        <div
-          ref={scrollRef}
-          className="category-scroll overflow-x-auto overflow-y-hidden pb-2 py-2"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-            cursor: "grab",
-          }}
-          onMouseDown={handleDragScroll}
-          onTouchStart={handleDragScroll}
-        >
-          <div className="flex flex-row flex-nowrap gap-4 px-1 pb-1">
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex gap-4 px-1 py-2">
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isSelected = value === cat.value;
@@ -107,7 +46,7 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
                   type="button"
                   onClick={() => onChange(cat.value)}
                   className={cn(
-                    "relative snap-start flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
+                    "relative flex-shrink-0 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all duration-300",
                     "active:scale-90 w-[100px] h-[100px]",
                     isSelected ? "bg-primary/5 scale-105 shadow-lg" : "bg-card hover:bg-card/80 hover:scale-102",
                   )}
@@ -156,8 +95,8 @@ export function CategoryIconPicker({ value, onChange }: CategoryIconPickerProps)
         </div>
 
         {/* Fade indicators */}
-        <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background via-background to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background via-background to-transparent pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background via-background to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background via-background to-transparent pointer-events-none" />
       </div>
     </div>
   );
