@@ -111,7 +111,7 @@ export function CategorySelectModal({
               No categories found
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 auto-rows-fr">
               {filtered.map((cat) => (
                 <CategoryTile
                   key={cat.value}
