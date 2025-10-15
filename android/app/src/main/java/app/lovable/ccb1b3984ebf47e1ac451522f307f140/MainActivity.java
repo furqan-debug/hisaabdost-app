@@ -4,14 +4,35 @@ import android.os.Bundle;
 import android.util.Log;
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 public class MainActivity extends BridgeActivity {
+
+    private AppOpenAdManager appOpenAdManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Register plugin
+        registerPlugin(AppOpenAdPlugin.class);
 
         Log.d("StartupTrace", "🚀 MainActivity started");
+
+        // Initialize Google Mobile Ads SDK
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+                Log.d("AdMob", "✅ Google Mobile Ads SDK initialized");
+            }
+        });
+
+        // Initialize App Open Ad Manager
+        appOpenAdManager = new AppOpenAdManager("ca-app-pub-8996865130200922/5906339239");
+        getApplication().registerActivityLifecycleCallbacks(appOpenAdManager);
+        Log.d("AppOpenAd", "✅ App Open Ad Manager initialized");
 
         try {
             // ✅ Firebase is automatically initialized by the Gradle plugin.
@@ -33,5 +54,9 @@ public class MainActivity extends BridgeActivity {
         }
 
         Log.d("StartupTrace", "✅ MainActivity onCreate finished");
+    }
+
+    public AppOpenAdManager getAppOpenAdManager() {
+        return appOpenAdManager;
     }
 }

@@ -69,15 +69,13 @@ const config: CapacitorConfig = {
     App: {
       enabled: true
     },
-    // Simplified AdMob configuration to avoid conflicts
+    // Native App Open Ad configuration
     AdMob: {
       appId: "ca-app-pub-8996865130200922~6761545939",
-      testingDevices: [], // Empty for production
+      testingDevices: [], // Add test device IDs for development
       tagForChildDirectedTreatment: false,
       tagForUnderAgeOfConsent: false,
-      maxAdContentRating: "G",
-      // Add configuration to handle build conflicts
-      androidManifestApplicationExtras: []
+      maxAdContentRating: "G"
     }
   },
   
