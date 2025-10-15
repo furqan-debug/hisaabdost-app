@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { App, AppState } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { AppOpenAdService } from '@/services/appOpenAdService';
+import { NativeAppOpenAdService } from '@/services/nativeAppOpenAdService';
 
 interface UseAppOpenAdsConfig {
   adUnitId: string;
@@ -11,7 +11,7 @@ interface UseAppOpenAdsConfig {
 }
 
 export const useAppOpenAds = (config: UseAppOpenAdsConfig) => {
-  const adServiceRef = useRef<AppOpenAdService | null>(null);
+  const adServiceRef = useRef<NativeAppOpenAdService | null>(null);
   const lastActiveTimeRef = useRef<number>(0);
   const isInitializedRef = useRef(false);
 
@@ -22,12 +22,11 @@ export const useAppOpenAds = (config: UseAppOpenAdsConfig) => {
 
     const initializeAds = async () => {
       try {
-        console.log('🚀 Initializing App Open ads hook...');
+        console.log('🚀 Initializing Native App Open ads hook...');
         
         // Get or create service instance
-        adServiceRef.current = AppOpenAdService.getInstance({
+        adServiceRef.current = NativeAppOpenAdService.getInstance({
           adUnitId: config.adUnitId,
-          testingDevices: config.testingDevices,
           showFrequencyHours: config.showFrequencyHours
         });
 

@@ -121,9 +121,9 @@ const App = () => {
                         </Suspense>
                     </BrowserRouter>
                     
-                    {/* App Open Ad - inside providers to access React hooks */}
+                    {/* Native App Open Ad */}
                     <AppOpenAd 
-                      adUnitId="ca-app-pub-8996865130200922/5906339239" 
+                      adUnitId="ca-app-pub-8996865130200922/5906339239"
                       showFrequencyHours={4}
                       enabled={true}
                     />
