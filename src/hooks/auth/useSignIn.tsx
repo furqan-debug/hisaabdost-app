@@ -2,6 +2,7 @@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { logLogin } from "@/utils/appsflyerTracking";
 
 export const useSignIn = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export const useSignIn = () => {
       
       if (data.user) {
         console.log("Sign in successful for user:", data.user.id);
+        logLogin();
         toast.success("Successfully signed in!");
         navigate("/app/dashboard");
       }

@@ -7,6 +7,7 @@ import { useFinnyChat } from './hooks/useFinnyChat';
 import { useMessageLimit } from './hooks/useMessageLimit';
 import { useFinnyExpenses } from './hooks/useFinnyExpenses';
 import { useFinnyBudgets } from './hooks/useFinnyBudgets';
+import { logFinnyInvoked } from '@/utils/appsflyerTracking';
 
 // Lazy load the FinnyChat component
 const FinnyChat = lazy(() => import('./FinnyChat'));
@@ -94,11 +95,17 @@ export const FinnyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
+  // Enhanced openChat with tracking
+  const openChatWithTracking = (source: string = 'unknown') => {
+    logFinnyInvoked(source);
+    openChat();
+  };
+
   return (
     <FinnyContext.Provider
       value={{
         isOpen,
-        openChat,
+        openChat: () => openChatWithTracking('context'),
         closeChat,
         toggleChat,
         triggerChat,
@@ -112,7 +119,7 @@ export const FinnyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }}
     >
       {children}
-      <FinnyButton onClick={openChat} isOpen={isOpen} />
+      <FinnyButton onClick={() => openChatWithTracking('fab_button')} isOpen={isOpen} />
       {isInitialized && (
         <Suspense fallback={<div className="hidden">Loading Finny...</div>}>
           <FinnyChat key={chatKey} isOpen={isOpen} onClose={closeChat} />

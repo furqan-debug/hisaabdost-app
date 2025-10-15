@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinny } from '../../context/FinnyContext';
+import { logFinnyMessageSent, logFinnyResponseShown } from '@/utils/appsflyerTracking';
 
 interface Message {
   id: string;
@@ -58,6 +59,10 @@ export const useEnhancedMessageSending = ({
 
     setMessages(prev => [...prev, userMessage]);
     saveMessage(userMessage);
+    
+    // Track message sent to Finny
+    logFinnyMessageSent(messageToSend);
+    
     setNewMessage('');
     setIsLoading(true);
     setIsTyping(true);
@@ -98,8 +103,12 @@ export const useEnhancedMessageSending = ({
         timestamp: new Date(),
         hasAction: !!data.action,
       };
-
+      
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Track Finny response
+      logFinnyResponseShown(data.response || data.message, !!data.action);
+      
       saveMessage(aiMessage);
 
       // Enhanced action handling

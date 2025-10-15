@@ -11,6 +11,7 @@ import { ExpenseFilters } from "@/components/expenses/ExpenseFilters";
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader";
 import { AnalyticsTabs } from "@/components/analytics/AnalyticsTabs";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
+import { logReportViewed } from "@/utils/appsflyerTracking";
 export default function Analytics() {
   const { user } = useAuth();
   const { selectedMonth } = useMonthContext();
@@ -61,6 +62,7 @@ export default function Analytics() {
       });
     };
   }, [queryClient, dateRange.start, dateRange.end, user?.id]);
+  
   const {
     data: expenses,
     isLoading,
@@ -98,6 +100,14 @@ export default function Analytics() {
     refetchOnWindowFocus: true,
     placeholderData: [] // Provides fallback data to prevent UI jumping
   });
+
+  // Track analytics page view when data loads
+  useEffect(() => {
+    if (!isLoading && expenses && expenses.length >= 0) {
+      logReportViewed('analytics');
+    }
+  }, [isLoading, expenses]);
+  
   const filteredExpenses = expenses?.filter(expense => {
     const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) || expense.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || expense.category === categoryFilter;
