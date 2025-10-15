@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep AppsFlyer SDK classes to prevent obfuscation
+-keep class com.appsflyer.** { *; }
+
+# Keep Kotlin internal classes (required for stability)
+-keep class kotlin.jvm.internal.** { *; }

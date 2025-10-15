@@ -3,17 +3,23 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig({
-  base: "./",
+  base: "./", // ✅ must be "./" for Capacitor apps
   plugins: [react()],
   build: {
     outDir: "dist",
     cssCodeSplit: true,
-    sourcemap: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined, // ✅ fixes chunk loading order issues
+      },
+    },
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-< 1859b046ff6e882390322fb85a02eec9af858a3c
+    },
   },
   server: {
     host: "::",

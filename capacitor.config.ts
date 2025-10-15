@@ -19,7 +19,7 @@ const config: CapacitorConfig = {
     allowMixedContent: true,
     captureInput: true,
     initialFocus: false,
-    webContentsDebuggingEnabled: false,
+    webContentsDebuggingEnabled: true,
     backgroundColor: "#ffffff",
     overscrollHistory: false,
     hardwareAcceleration: "all",

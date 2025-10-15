@@ -4,13 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "format": "prettier --write ."
-  },
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "clean": "rmdir /s /q node_modules && rmdir /s /q dist && npm cache clean --force && npm install",
+  "validate": "node scripts/validate.js",
+  "cap:sync": "npx cap sync android",
+  "cap:run:android": "npx cap run android",
+  "cap:build:android": "npx cap build android"
+},
   "dependencies": {
     "@capacitor-community/admob": "^7.0.3",
     "@capacitor/android": "^7.4.3",

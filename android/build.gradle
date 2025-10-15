@@ -2,8 +2,8 @@
 
 buildscript {
     ext {
-        // ✅ Use a stable, modern Kotlin version compatible with Java 17
-        kotlin_version = '1.9.25'
+        // ✅ Stable Kotlin version compatible with Java 17
+        kotlin_version = '1.9.24'
     }
 
     repositories {
@@ -12,8 +12,13 @@ buildscript {
     }
 
     dependencies {
+        // ✅ Google Services plugin for Firebase & Ads
         classpath 'com.google.gms:google-services:4.4.2'
-        classpath 'com.android.tools.build:gradle:8.7.2'
+
+        // ✅ Android Gradle plugin (stable for Capacitor 7)
+        classpath 'com.android.tools.build:gradle:8.5.2'
+
+        // ✅ Kotlin Gradle plugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -27,7 +32,7 @@ allprojects {
     }
 }
 
-// ✅ Global configuration to force all modules to use Java 17 + Kotlin 17
+// ✅ Global configuration: unify Kotlin/JVM versions for every module & plugin
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty("android")) {
@@ -36,15 +41,37 @@ subprojects {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
-                if (project.hasProperty("kotlinOptions")) {
-                    project.kotlinOptions.jvmTarget = "17"
+            }
+        }
+
+        // ✅ Ensure every Kotlin compile task targets JVM 17
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+
+        // ✅ Use Kotlin DSL's proper toolchain declaration
+        plugins.withId("org.jetbrains.kotlin.android") {
+            project.extensions.configure(org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension) {
+                kotlin {
+                    jvmToolchain(17)
                 }
+            }
+        }
+
+        // ✅ Force Kotlin stdlib 1.9.24 across all dependencies
+        configurations.all {
+            resolutionStrategy {
+                force "org.jetbrains.kotlin:kotlin-stdlib:1.9.24"
+                force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.24"
+                force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24"
             }
         }
     }
 }
 
 // ✅ Clean build directory task
-task clean(type: Delete) {
+tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

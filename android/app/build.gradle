@@ -1,16 +1,7 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
-// ✅ Apply Firebase plugin ONCE, at the bottom again later
-// (Don’t duplicate it at the top — it causes initialization issues)
-
-configurations.all {
-    resolutionStrategy {
-        force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
-        force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"
-        force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
-    }
-}
-
+// ✅ Android project configuration
 android {
     namespace "app.lovable.ccb1b3984ebf47e1ac451522f307f140"
     compileSdk rootProject.ext.compileSdkVersion
@@ -22,11 +13,15 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        aaptOptions {
-            // Ignore unnecessary assets
-            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
-        }
+    // ✅ Modern Gradle toolchain setup (forces JVM 17 for all Java + Kotlin tasks)
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlin {
+        jvmToolchain(17)
     }
 
     buildTypes {
@@ -37,6 +32,7 @@ android {
     }
 }
 
+
 repositories {
     flatDir {
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
@@ -45,7 +41,8 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-
+    implementation 'com.appsflyer:af-android-sdk:6.17.3'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
@@ -58,7 +55,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
 
-    // ✅ Firebase (using BoM ensures version compatibility)
+    // ✅ Firebase (BoM ensures version compatibility)
     implementation platform('com.google.firebase:firebase-bom:33.4.0')
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
@@ -67,5 +64,5 @@ dependencies {
 // ✅ Required for Capacitor
 apply from: 'capacitor.build.gradle'
 
-// ✅ Apply Google services plugin ONCE — at the end
+// ✅ Apply Google services plugin once, at the end
 apply plugin: 'com.google.gms.google-services'
