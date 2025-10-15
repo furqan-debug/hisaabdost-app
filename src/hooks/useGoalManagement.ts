@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { logGoalAchieved } from "@/utils/appsflyerTracking";
 
 interface Goal {
   id: string;
@@ -117,6 +118,15 @@ export function useGoalManagement() {
 
       // Update only if savings are different from what's stored
       if (Math.abs(savingsToStore - goal.current_amount) > 0.01) {
+        // Check if goal was just achieved (crossed the threshold)
+        const wasNotAchieved = goal.current_amount < goal.target_amount;
+        const isNowAchieved = savingsToStore >= goal.target_amount;
+        
+        if (wasNotAchieved && isNowAchieved) {
+          console.log(`🎉 Goal "${goal.title}" just achieved!`);
+          logGoalAchieved(goal.title, goal.target_amount, 'achieved');
+        }
+
         const { error } = await supabase
           .from('goals')
           .update({ current_amount: savingsToStore })

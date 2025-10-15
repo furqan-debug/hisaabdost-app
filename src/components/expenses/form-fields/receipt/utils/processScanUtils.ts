@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logReceiptScanned } from '@/utils/appsflyerTracking';
 
 export interface ScanResult {
   success: boolean;
@@ -153,6 +154,10 @@ export async function processScanResults(
 
     // Show success message
     const totalAmount = expensesToInsert.reduce((sum, expense) => sum + expense.amount, 0);
+    
+    // Track receipt scan in AppsFlyer
+    logReceiptScanned(scanResults.merchant || 'Unknown', totalAmount);
+    
     toast.success(`Added ${insertedExpenses.length} expenses totaling ${totalAmount.toFixed(2)}`, {
       description: scanResults.warning || `From ${scanResults.merchant || 'receipt'}`
     });

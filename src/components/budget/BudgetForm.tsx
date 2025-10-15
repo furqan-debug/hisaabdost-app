@@ -34,6 +34,7 @@ import { useBudgetQueries } from "@/hooks/useBudgetQueries";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
+import { logAddBudget } from "@/utils/appsflyerTracking";
 
 const budgetSchema = z.object({
   category: z.string().min(1, "Category is required"),
@@ -123,12 +124,14 @@ export function BudgetForm({
           .update(budgetData)
           .eq("id", budget.id);
         if (error) throw error;
+        logAddBudget(formData.category, formData.amount);
         toast.success("Budget updated successfully");
       } else {
         const { error } = await supabase
           .from("budgets")
           .insert(budgetData);
         if (error) throw error;
+        logAddBudget(formData.category, formData.amount);
         toast.success("Budget created successfully");
       }
 

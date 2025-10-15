@@ -11,6 +11,7 @@ import { updateExpenseCache } from "@/utils/expenseCacheUtils";
 import { logExpenseActivity } from "@/services/activityLogService";
 import { useCarryoverAdjustment } from "@/hooks/useCarryoverAdjustment";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
+import { logExpenseAdded } from "@/utils/appsflyerTracking";
 
 interface UseExpenseSubmitProps extends UseExpenseFormProps {
   formData: ExpenseFormData;
@@ -165,6 +166,9 @@ export function useExpenseSubmit({
           } catch (logError) {
             console.error('Failed to log expense creation activity:', logError);
           }
+
+          // Track expense addition in AppsFlyer
+          logExpenseAdded(newExpense.category, newExpense.amount, newExpense.paymentMethod);
 
           // Update cache and invalidate all relevant queries
           console.log("Updating expense cache after new expense");
