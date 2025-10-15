@@ -8,6 +8,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.appsflyer.AppsFlyerLib;
+import com.appsflyer.adrevenue.AppsFlyerAdRevenue;
 
 public class MainActivity extends BridgeActivity {
 
@@ -31,8 +33,20 @@ public class MainActivity extends BridgeActivity {
             }
         });
 
-        // Initialize App Open Ad Manager
-        appOpenAdManager = new AppOpenAdManager("ca-app-pub-8996865130200922/5906339239");
+        // Initialize AppsFlyer Ad Revenue SDK
+        try {
+            AppsFlyerAdRevenue.initialize(new AppsFlyerAdRevenue.Builder(this)
+                .build());
+            Log.d("AppsFlyerAdRevenue", "✅ AppsFlyer Ad Revenue SDK initialized");
+        } catch (Exception e) {
+            Log.e("AppsFlyerAdRevenue", "❌ Failed to initialize: " + e.getMessage(), e);
+        }
+
+        // Initialize App Open Ad Manager with context
+        appOpenAdManager = new AppOpenAdManager(
+            getApplicationContext(), 
+            "ca-app-pub-8996865130200922/5906339239"
+        );
         getApplication().registerActivityLifecycleCallbacks(appOpenAdManager);
         Log.d("AppOpenAd", "✅ App Open Ad Manager initialized");
 

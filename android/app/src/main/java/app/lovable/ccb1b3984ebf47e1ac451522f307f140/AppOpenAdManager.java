@@ -2,6 +2,7 @@ package app.lovable.ccb1b3984ebf47e1ac451522f307f140;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -11,10 +12,18 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdValue;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.OnPaidEventListener;
 import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.appsflyer.AFAdRevenueData;
+import com.appsflyer.adrevenue.AppsFlyerAdRevenue;
+import com.appsflyer.adrevenue.adnetworks.generic.MediationNetwork;
+import com.appsflyer.adrevenue.adnetworks.generic.Scheme;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
     private static final String LOG_TAG = "AppOpenAdManager";
@@ -24,13 +33,15 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
     private AppOpenAd appOpenAd = null;
     private AppOpenAd.AppOpenAdLoadCallback loadCallback;
     private Activity currentActivity;
+    private Context context;
     private String adUnitId;
     private long loadTime = 0;
     private long lastShownTime = 0;
     private boolean isShowingAd = false;
     private boolean isLoadingAd = false;
 
-    public AppOpenAdManager(String adUnitId) {
+    public AppOpenAdManager(Context context, String adUnitId) {
+        this.context = context;
         this.adUnitId = adUnitId;
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
     }
@@ -113,6 +124,42 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
     }
 
     /**
+     * Log ad revenue to AppsFlyer
+     */
+    private void logAdRevenueToAppsFlyer(AdValue adValue, String adType, String placement) {
+        try {
+            // Convert micros to standard currency (AdMob uses micro-units)
+            double revenue = adValue.getValueMicros() / 1_000_000.0;
+            String currencyCode = adValue.getCurrencyCode();
+            
+            Log.d(LOG_TAG, "💰 Ad Revenue Event - Amount: " + revenue + " " + currencyCode + 
+                  ", Type: " + adType + ", Placement: " + placement);
+            
+            // Build additional parameters map
+            Map<String, Object> additionalParameters = new HashMap<>();
+            additionalParameters.put(Scheme.AD_UNIT, adUnitId);
+            additionalParameters.put(Scheme.AD_TYPE, adType);
+            additionalParameters.put(Scheme.PLACEMENT, placement);
+            
+            // Create AFAdRevenueData object
+            AFAdRevenueData adRevenueData = new AFAdRevenueData.Builder()
+                .setMediationNetwork(MediationNetwork.ADMOB)
+                .setRevenue(revenue)
+                .setCurrency(currencyCode)
+                .setAdditionalParameters(additionalParameters)
+                .build();
+            
+            // Log to AppsFlyer
+            AppsFlyerAdRevenue.logAdRevenue(context, adRevenueData, additionalParameters);
+            
+            Log.d(LOG_TAG, "✅ AppsFlyer Ad Revenue Logged Successfully");
+            
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "❌ Failed to log ad revenue to AppsFlyer: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Show the app open ad if available
      */
     public void showAdIfAvailable(@NonNull final Activity activity) {
@@ -133,6 +180,15 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
         }
 
         Log.d(LOG_TAG, "📺 Showing App Open ad");
+        
+        // Set up revenue tracking listener
+        appOpenAd.setOnPaidEventListener(new OnPaidEventListener() {
+            @Override
+            public void onPaidEvent(@NonNull AdValue adValue) {
+                Log.d(LOG_TAG, "💵 Paid event received from AdMob");
+                logAdRevenueToAppsFlyer(adValue, "App Open", "App_Launch");
+            }
+        });
         
         appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override

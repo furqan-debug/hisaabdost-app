@@ -62,6 +62,9 @@ dependencies {
     
     // ✅ Google Mobile Ads SDK for App Open Ads
     implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    
+    // ✅ AppsFlyer Ad Revenue SDK
+    implementation 'com.appsflyer:adrevenue:6.9.0'
 }
 
 // ✅ Required for Capacitor
