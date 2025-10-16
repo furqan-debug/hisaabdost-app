@@ -142,7 +142,7 @@ const App = () => {
                     <AppOpenAd 
                       adUnitId="ca-app-pub-8996865130200922/5906339239"
                       showFrequencyHours={4}
-                      enabled={true}
+                      enabled={false}
                     />
                     
                     <Toaster />
