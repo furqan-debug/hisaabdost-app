@@ -7,7 +7,8 @@ import { Capacitor } from '@capacitor/core';
 
 export function useScheduledNotifications() {
   const { user } = useAuth();
-  const { budgetNotificationData } = useBudgetData() || {};
+  const budgetData = useBudgetData();
+  const budgetNotificationData = budgetData?.budgetNotificationData;
   const { data: loans } = useLoans();
 
   // Monitor budget thresholds in real-time
