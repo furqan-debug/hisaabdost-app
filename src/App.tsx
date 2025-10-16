@@ -123,7 +123,7 @@ const App = () => {
                     
                     {/* Native App Open Ad */}
                     <AppOpenAd 
-                      adUnitId="ca-app-pub-8996865130200922/5906339239"
+                      adUnitId="ca-app-pub-8996865130200922/5986212084"
                       showFrequencyHours={4}
                       enabled={true}
                     />
