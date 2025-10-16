@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 import { useAddLoan, LoanType } from '@/hooks/useLoans';
 import { useCurrency } from '@/hooks/use-currency';
 import { getCurrencyByCode } from '@/utils/currencyUtils';
-import { useScheduledNotifications } from '@/hooks/useScheduledNotifications';
 
 interface AddLoanDialogProps {
   open: boolean;
@@ -34,7 +33,6 @@ export default function AddLoanDialog({ open, onOpenChange }: AddLoanDialogProps
   const [installmentFrequency, setInstallmentFrequency] = useState<'weekly' | 'bi-weekly' | 'monthly'>('monthly');
 
   const addLoan = useAddLoan();
-  const { scheduleLoanReminders } = useScheduledNotifications();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,18 +58,7 @@ export default function AddLoanDialog({ open, onOpenChange }: AddLoanDialogProps
         installments,
       },
       {
-        onSuccess: (data) => {
-          // Schedule loan reminder notifications if due date is set
-          if (dueDate && data) {
-            scheduleLoanReminders({
-              id: data.id,
-              person_name: personName,
-              amount: Number(amount),
-              due_date: dueDate.toISOString().split('T')[0],
-              loan_type: loanType,
-            });
-          }
-          
+        onSuccess: () => {
           setPersonName('');
           setAmount('');
           setLoanType('i_gave');
