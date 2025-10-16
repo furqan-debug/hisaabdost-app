@@ -1,7 +1,7 @@
 // Service Worker for Offline-First Architecture
-const CACHE_NAME = 'hisaabdost-v3';
-const APP_SHELL_CACHE = 'app-shell-v3';
-const DATA_CACHE = 'data-cache-v3';
+const CACHE_NAME = 'hisaabdost-v4';
+const APP_SHELL_CACHE = 'app-shell-v4';
+const DATA_CACHE = 'data-cache-v4';
 
 // App shell resources - these should load instantly
 const APP_SHELL_FILES = [
@@ -64,6 +64,18 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip caching for non-GET requests (HEAD, POST, etc.)
+  if (request.method !== 'GET') {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Skip caching for dynamically loaded asset chunks to avoid stale references
+  if (url.origin === self.location.origin && url.pathname.startsWith('/assets/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   // Handle navigation requests (app shell)
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -109,13 +121,22 @@ self.addEventListener('fetch', (event) => {
 
 // Network first strategy for data
 async function networkFirstWithCache(request) {
+  // Only cache GET requests
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+
   try {
     const networkResponse = await fetch(request);
     
-    // Cache successful responses
+    // Cache successful responses with error handling
     if (networkResponse.status === 200) {
-      const cache = await caches.open(DATA_CACHE);
-      cache.put(request, networkResponse.clone());
+      try {
+        const cache = await caches.open(DATA_CACHE);
+        await cache.put(request, networkResponse.clone());
+      } catch (cacheError) {
+        console.log('Service Worker: Cache put failed:', cacheError);
+      }
     }
     
     return networkResponse;
@@ -144,6 +165,11 @@ async function networkFirstWithCache(request) {
 
 // Cache first strategy for static assets
 async function cacheFirstWithNetwork(request) {
+  // Only cache GET requests
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+
   const cachedResponse = await caches.match(request);
   
   if (cachedResponse) {
@@ -151,7 +177,9 @@ async function cacheFirstWithNetwork(request) {
     fetch(request).then((response) => {
       if (response.status === 200) {
         const cache = caches.open(APP_SHELL_CACHE);
-        cache.then(c => c.put(request, response));
+        cache.then(c => {
+          c.put(request, response).catch(() => {});
+        });
       }
     }).catch(() => {});
     
@@ -161,8 +189,12 @@ async function cacheFirstWithNetwork(request) {
   const networkResponse = await fetch(request);
   
   if (networkResponse.status === 200) {
-    const cache = await caches.open(APP_SHELL_CACHE);
-    cache.put(request, networkResponse.clone());
+    try {
+      const cache = await caches.open(APP_SHELL_CACHE);
+      await cache.put(request, networkResponse.clone());
+    } catch (cacheError) {
+      console.log('Service Worker: Cache put failed:', cacheError);
+    }
   }
   
   return networkResponse;
