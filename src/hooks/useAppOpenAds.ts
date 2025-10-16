@@ -22,6 +22,9 @@ export const useAppOpenAds = (config: UseAppOpenAdsConfig) => {
 
     const initializeAds = async () => {
       try {
+        // Wait for native bridge to be ready
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         console.log('🚀 Initializing Native App Open ads hook...');
         
         // Get or create service instance
@@ -40,6 +43,7 @@ export const useAppOpenAds = (config: UseAppOpenAdsConfig) => {
         console.log('✅ App Open ads hook initialized');
       } catch (error) {
         console.error('❌ Failed to initialize App Open ads hook:', error);
+        // Don't throw - allow app to continue without ads
       }
     };
 

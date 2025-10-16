@@ -710,6 +710,7 @@ export type Database = {
           last_login_at: string | null
           last_notification_date: string | null
           monthly_income: number | null
+          notification_preferences: Json | null
           notification_time: string | null
           notification_timezone: string | null
           notifications_enabled: boolean | null
@@ -730,6 +731,7 @@ export type Database = {
           last_login_at?: string | null
           last_notification_date?: string | null
           monthly_income?: number | null
+          notification_preferences?: Json | null
           notification_time?: string | null
           notification_timezone?: string | null
           notifications_enabled?: boolean | null
@@ -750,6 +752,7 @@ export type Database = {
           last_login_at?: string | null
           last_notification_date?: string | null
           monthly_income?: number | null
+          notification_preferences?: Json | null
           notification_time?: string | null
           notification_timezone?: string | null
           notifications_enabled?: boolean | null
@@ -867,6 +870,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          notification_type: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          trigger_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_type: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          trigger_data: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_type?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          trigger_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_carryover_preferences: {
         Row: {

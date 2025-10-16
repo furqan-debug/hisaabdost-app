@@ -8,7 +8,14 @@ interface AppOpenAdPlugin {
   getStatus(): Promise<{ isLoaded: boolean; isShowing: boolean }>;
 }
 
-const AppOpenAd = registerPlugin<AppOpenAdPlugin>('AppOpenAd');
+const AppOpenAd = (() => {
+  try {
+    return registerPlugin<AppOpenAdPlugin>('AppOpenAd');
+  } catch (error) {
+    console.warn('⚠️ AppOpenAd plugin not available:', error);
+    return null;
+  }
+})();
 
 export interface NativeAppOpenAdConfig {
   adUnitId: string;
@@ -38,6 +45,11 @@ export class NativeAppOpenAdService {
       return;
     }
 
+    if (!AppOpenAd) {
+      console.warn('⚠️ AppOpenAd plugin not available');
+      return;
+    }
+
     try {
       console.log('🚀 Initializing Native App Open Ad...');
       await AppOpenAd.initialize({ adUnitId: this.config.adUnitId });
@@ -50,7 +62,7 @@ export class NativeAppOpenAdService {
       console.log('✅ Native App Open Ad initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize Native App Open Ad:', error);
-      throw error;
+      // Don't throw - allow app to continue without ads
     }
   }
 
@@ -60,19 +72,29 @@ export class NativeAppOpenAdService {
       await this.initialize();
     }
 
+    if (!AppOpenAd) {
+      console.warn('⚠️ AppOpenAd plugin not available');
+      return;
+    }
+
     try {
       console.log('📡 Loading Native App Open Ad...');
       await AppOpenAd.loadAd();
       console.log('✅ Native App Open Ad loaded');
     } catch (error) {
       console.error('❌ Failed to load Native App Open Ad:', error);
-      throw error;
+      // Don't throw - allow app to continue without ads
     }
   }
 
   async showAd(): Promise<boolean> {
     if (!this.isInitialized) {
       console.warn('⚠️ Cannot show ad: Not initialized');
+      return false;
+    }
+
+    if (!AppOpenAd) {
+      console.warn('⚠️ AppOpenAd plugin not available');
       return false;
     }
 
@@ -111,6 +133,15 @@ export class NativeAppOpenAdService {
   }
 
   async getStatus(): Promise<{ isLoaded: boolean; isShowing: boolean; canShow: boolean; nextAvailableTime: number }> {
+    if (!AppOpenAd) {
+      return {
+        isLoaded: false,
+        isShowing: false,
+        canShow: false,
+        nextAvailableTime: 0
+      };
+    }
+
     try {
       const status = await AppOpenAd.getStatus();
       
