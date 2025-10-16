@@ -6,8 +6,8 @@ import './index.css';
 
 console.log('🚀 Starting React application...');
 
-// Register Service Worker for offline functionality
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+// Register Service Worker for offline functionality (skip on native Capacitor)
+if (import.meta.env.PROD && 'serviceWorker' in navigator && !(window as any).Capacitor) {
   window.addEventListener('load', async () => {
     try {
       console.log('🔧 Registering Service Worker...');
@@ -30,6 +30,8 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       console.error('❌ Service Worker registration failed:', error);
     }
   });
+} else if ((window as any).Capacitor) {
+  console.info('📱 Skipping Service Worker registration on native Capacitor');
 } else if ('serviceWorker' in navigator) {
   console.info('ℹ️ Skipping Service Worker registration in development');
 }
