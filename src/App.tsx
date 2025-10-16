@@ -72,7 +72,24 @@ const App = () => {
   console.log('🚀 App component rendering with full functionality...');
   
   return (
-    <ErrorBoundary>
+    <ErrorBoundary 
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="text-center space-y-4 max-w-md">
+            <p className="text-lg font-medium text-foreground">Unable to start app</p>
+            <p className="text-sm text-muted-foreground">
+              Please ensure you're running the latest version. If the problem persists, try reinstalling the app.
+            </p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      }
+    >
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <TooltipProvider>
