@@ -1046,10 +1046,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_random_tip: {
-        Args: { category_filter?: string }
-        Returns: string
-      }
+      get_random_tip: { Args: { category_filter?: string }; Returns: string }
       get_user_family_ids: {
         Args: { _user_id: string }
         Returns: {
@@ -1068,10 +1065,7 @@ export type Database = {
         Args: { _family_id: string; _user_id: string }
         Returns: boolean
       }
-      trigger_daily_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      trigger_daily_notifications: { Args: never; Returns: undefined }
     }
     Enums: {
       family_role: "owner" | "admin" | "member"
