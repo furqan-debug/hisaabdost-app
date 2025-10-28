@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
 
         // Get user's push tokens
         const { data: tokens } = await supabase
-          .from('push_tokens')
-          .select('token, platform')
+          .from('user_device_tokens')
+          .select('device_token, platform')
           .eq('user_id', user.id);
 
         if (!tokens || tokens.length === 0) continue;
@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
                   },
                   body: JSON.stringify({
                     message: {
-                      token: tokenData.token,
+                      token: tokenData.device_token,
                       notification: {
                         title: notification.title,
                         body: notification.body,

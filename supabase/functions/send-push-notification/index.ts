@@ -70,18 +70,59 @@ serve(async (req) => {
     if (firebaseServiceAccount) {
       try {
         const serviceAccount = JSON.parse(firebaseServiceAccount);
+        const jwtToken = await generateFirebaseJWT(serviceAccount);
         
         for (const tokenData of tokens) {
           try {
-            // Here you would integrate with Firebase Admin SDK
-            // For now, we'll log and store the notification intent
-            console.log("📤 Would send to:", tokenData.device_token, "platform:", tokenData.platform);
+            console.log("📤 Sending FCM to:", tokenData.device_token, "platform:", tokenData.platform);
             
-            results.push({
-              token: tokenData.device_token,
-              success: true,
-              platform: tokenData.platform,
-            });
+            const fcmResponse = await fetch(
+              `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${jwtToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  message: {
+                    token: tokenData.device_token,
+                    notification: {
+                      title: title,
+                      body: body,
+                    },
+                    data: data || {},
+                    android: {
+                      priority: 'high',
+                      notification: {
+                        sound: 'default',
+                        channel_id: data?.type || 'default',
+                      },
+                    },
+                  },
+                }),
+              }
+            );
+
+            const fcmResult = await fcmResponse.json();
+
+            if (fcmResponse.ok) {
+              console.log("✅ FCM sent successfully:", fcmResult);
+              results.push({
+                token: tokenData.device_token,
+                success: true,
+                platform: tokenData.platform,
+                messageId: fcmResult.name,
+              });
+            } else {
+              console.error("❌ FCM error:", fcmResult);
+              results.push({
+                token: tokenData.device_token,
+                success: false,
+                error: fcmResult.error?.message || 'FCM send failed',
+                platform: tokenData.platform,
+              });
+            }
           } catch (error) {
             console.error("❌ Error sending to token:", tokenData.device_token, error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -128,3 +169,43 @@ serve(async (req) => {
     );
   }
 });
+
+async function generateFirebaseJWT(serviceAccount: any): Promise<string> {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: serviceAccount.client_email,
+    sub: serviceAccount.client_email,
+    aud: 'https://fcm.googleapis.com/',
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encoder = new TextEncoder();
+  const headerBase64 = btoa(JSON.stringify(header));
+  const payloadBase64 = btoa(JSON.stringify(payload));
+  const data = `${headerBase64}.${payloadBase64}`;
+
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    pemToArrayBuffer(serviceAccount.private_key),
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privateKey, encoder.encode(data));
+  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+  return `${data}.${signatureBase64}`;
+}
+
+function pemToArrayBuffer(pem: string): ArrayBuffer {
+  const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, '').replace(/-----END PRIVATE KEY-----/, '').replace(/\s/g, '');
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
