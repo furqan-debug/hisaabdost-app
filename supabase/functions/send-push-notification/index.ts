@@ -143,7 +143,7 @@ serve(async (req) => {
 
     // Log notification
     await supabase.from("notification_logs").insert({
-      user_id: userId,
+      user_id: userId !== 'all' ? userId : null,
       title,
       body,
       data: data || {},
