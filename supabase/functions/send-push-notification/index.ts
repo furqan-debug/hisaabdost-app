@@ -69,19 +69,25 @@ serve(async (req) => {
     // Send notifications via Firebase if configured
     if (firebaseServiceAccount) {
       try {
+        console.log("🔐 Starting FCM OAuth flow...");
         const serviceAccount = JSON.parse(firebaseServiceAccount);
-        const jwtToken = await generateFirebaseJWT(serviceAccount);
+        
+        // Build JWT and exchange for OAuth access token
+        const jwt = await buildServiceAccountJWT(serviceAccount);
+        const accessToken = await exchangeForAccessToken(jwt);
+        console.log("✅ OAuth access token obtained, token length:", accessToken.length);
         
         for (const tokenData of tokens) {
           try {
-            console.log("📤 Sending FCM to:", tokenData.device_token, "platform:", tokenData.platform);
+            const tokenPreview = tokenData.device_token.substring(0, 20) + "...";
+            console.log(`📤 Sending FCM to token: ${tokenPreview}, platform: ${tokenData.platform}`);
             
             const fcmResponse = await fetch(
               `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
               {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${jwtToken}`,
+                  'Authorization': `Bearer ${accessToken}`,
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
@@ -105,9 +111,10 @@ serve(async (req) => {
             );
 
             const fcmResult = await fcmResponse.json();
+            console.log(`📊 FCM response status: ${fcmResponse.status}`, fcmResult);
 
             if (fcmResponse.ok) {
-              console.log("✅ FCM sent successfully:", fcmResult);
+              console.log(`✅ FCM sent successfully to ${tokenPreview}`);
               results.push({
                 token: tokenData.device_token,
                 success: true,
@@ -115,7 +122,7 @@ serve(async (req) => {
                 messageId: fcmResult.name,
               });
             } else {
-              console.error("❌ FCM error:", fcmResult);
+              console.error(`❌ FCM error for ${tokenPreview}:`, fcmResult);
               results.push({
                 token: tokenData.device_token,
                 success: false,
@@ -124,7 +131,7 @@ serve(async (req) => {
               });
             }
           } catch (error) {
-            console.error("❌ Error sending to token:", tokenData.device_token, error);
+            console.error("❌ Error sending to token:", error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             results.push({
               token: tokenData.device_token,
@@ -135,7 +142,7 @@ serve(async (req) => {
           }
         }
       } catch (parseError) {
-        console.error("❌ Error parsing Firebase service account:", parseError);
+        console.error("❌ Error in Firebase OAuth flow:", parseError);
       }
     } else {
       console.log("⚠️ Firebase service account not configured");
@@ -170,13 +177,14 @@ serve(async (req) => {
   }
 });
 
-async function generateFirebaseJWT(serviceAccount: any): Promise<string> {
+async function buildServiceAccountJWT(serviceAccount: any): Promise<string> {
   const header = { alg: 'RS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iss: serviceAccount.client_email,
     sub: serviceAccount.client_email,
-    aud: 'https://fcm.googleapis.com/',
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,
   };
@@ -198,6 +206,22 @@ async function generateFirebaseJWT(serviceAccount: any): Promise<string> {
   const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
   return `${data}.${signatureBase64}`;
+}
+
+async function exchangeForAccessToken(jwt: string): Promise<string> {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OAuth token exchange failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
 }
 
 function pemToArrayBuffer(pem: string): ArrayBuffer {

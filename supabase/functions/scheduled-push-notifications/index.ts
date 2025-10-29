@@ -224,55 +224,77 @@ Deno.serve(async (req) => {
         }
 
         // Send notifications via Firebase
-        for (const notification of notifications) {
-          for (const tokenData of tokens) {
-            try {
-              const { data: firebaseKey } = await supabase.rpc('get_secret', { secret_name: 'FIREBASE_SERVICE_ACCOUNT' });
-              
-              if (!firebaseKey) {
-                console.warn('Firebase service account not configured');
-                continue;
-              }
+        const firebaseServiceAccount = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
+        
+        if (!firebaseServiceAccount) {
+          console.error('❌ FIREBASE_SERVICE_ACCOUNT not configured');
+          results.errors++;
+          continue;
+        }
 
-              const serviceAccount = JSON.parse(firebaseKey);
-              const jwtToken = await generateFirebaseJWT(serviceAccount);
+        try {
+          const serviceAccount = JSON.parse(firebaseServiceAccount);
+          console.log("🔐 Starting FCM OAuth flow for scheduled notifications...");
+          
+          // Build JWT and exchange for OAuth access token
+          const jwt = await buildServiceAccountJWT(serviceAccount);
+          const accessToken = await exchangeForAccessToken(jwt);
+          console.log("✅ OAuth access token obtained");
+          
+          for (const notification of notifications) {
+            for (const tokenData of tokens) {
+              try {
+                const tokenPreview = tokenData.device_token.substring(0, 20) + "...";
+                console.log(`📤 Sending scheduled notification to ${tokenPreview}`);
 
-              const fcmResponse = await fetch(
-                `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${jwtToken}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    message: {
-                      token: tokenData.device_token,
-                      notification: {
-                        title: notification.title,
-                        body: notification.body,
-                      },
-                      data: notification.data || {},
-                      android: {
-                        priority: notification.priority === 'critical' ? 'high' : 'normal',
+
+                const fcmResponse = await fetch(
+                  `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      message: {
+                        token: tokenData.device_token,
                         notification: {
-                          sound: 'default',
-                          channel_id: notification.data?.type || 'default',
+                          title: notification.title,
+                          body: notification.body,
+                        },
+                        data: notification.data || {},
+                        android: {
+                          priority: notification.priority === 'critical' ? 'high' : 'normal',
+                          notification: {
+                            sound: 'default',
+                            channel_id: notification.data?.type || 'default',
+                          },
                         },
                       },
-                    },
-                  }),
-                }
-              );
+                    }),
+                  }
+                );
 
-              if (fcmResponse.ok) {
-                results.notificationsSent++;
+                const fcmResult = await fcmResponse.json();
+                console.log(`📊 FCM response: ${fcmResponse.status}`, fcmResult);
+
+                if (fcmResponse.ok) {
+                  console.log(`✅ Scheduled notification sent to ${tokenPreview}`);
+                  results.notificationsSent++;
+                } else {
+                  console.error(`❌ FCM error for ${tokenPreview}:`, fcmResult);
+                  results.errors++;
+                }
+              } catch (error) {
+                console.error('❌ Error sending notification:', error);
+                results.errors++;
               }
-            } catch (error) {
-              console.error('Error sending notification:', error);
-              results.errors++;
             }
           }
+        } catch (error) {
+          console.error('❌ Error in scheduled notification Firebase flow:', error);
+          results.errors++;
         }
 
         results.analyzed++;
@@ -297,13 +319,14 @@ Deno.serve(async (req) => {
   }
 });
 
-async function generateFirebaseJWT(serviceAccount: any): Promise<string> {
+async function buildServiceAccountJWT(serviceAccount: any): Promise<string> {
   const header = { alg: 'RS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iss: serviceAccount.client_email,
     sub: serviceAccount.client_email,
-    aud: 'https://fcm.googleapis.com/',
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,
   };
@@ -325,6 +348,22 @@ async function generateFirebaseJWT(serviceAccount: any): Promise<string> {
   const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
   return `${data}.${signatureBase64}`;
+}
+
+async function exchangeForAccessToken(jwt: string): Promise<string> {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OAuth token exchange failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
 }
 
 function pemToArrayBuffer(pem: string): ArrayBuffer {
