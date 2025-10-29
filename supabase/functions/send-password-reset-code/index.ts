@@ -104,7 +104,7 @@ const sendResetEmail = async (email: string, resetCode: string) => {
   `;
 
   const emailPayload = {
-    from: "HisaabDost <onboarding@resend.dev>", // Using verified Resend domain
+    from: "HisaabDost <noreply@hisaabdost.com>",
     to: [email],
     subject: "Your HisaabDost Password Reset Code",
     html: emailHtml,
@@ -345,7 +345,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Email error message:", emailError instanceof Error ? emailError.message : 'Unknown email error');
       
       return new Response(
-        JSON.stringify({ error: `Failed to send reset email: ${emailError instanceof Error ? emailError.message : 'Unknown error'}` }),
+        JSON.stringify({ 
+          success: false,
+          error: "Email service is temporarily unavailable. Please try again later or contact support." 
+        }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -356,7 +359,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Handler error stack:", error instanceof Error ? error.stack : 'No stack available');
     
     return new Response(
-      JSON.stringify({ error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` }),
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : "An unexpected error occurred. Please try again later." 
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
