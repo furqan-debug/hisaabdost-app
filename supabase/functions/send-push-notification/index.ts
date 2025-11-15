@@ -69,21 +69,69 @@ serve(async (req) => {
     // Send notifications via Firebase if configured
     if (firebaseServiceAccount) {
       try {
+        console.log("🔐 Starting FCM OAuth flow...");
         const serviceAccount = JSON.parse(firebaseServiceAccount);
+        
+        // Build JWT and exchange for OAuth access token
+        const jwt = await buildServiceAccountJWT(serviceAccount);
+        const accessToken = await exchangeForAccessToken(jwt);
+        console.log("✅ OAuth access token obtained, token length:", accessToken.length);
         
         for (const tokenData of tokens) {
           try {
-            // Here you would integrate with Firebase Admin SDK
-            // For now, we'll log and store the notification intent
-            console.log("📤 Would send to:", tokenData.device_token, "platform:", tokenData.platform);
+            const tokenPreview = tokenData.device_token.substring(0, 20) + "...";
+            console.log(`📤 Sending FCM to token: ${tokenPreview}, platform: ${tokenData.platform}`);
             
-            results.push({
-              token: tokenData.device_token,
-              success: true,
-              platform: tokenData.platform,
-            });
+            const fcmResponse = await fetch(
+              `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  message: {
+                    token: tokenData.device_token,
+                    notification: {
+                      title: title,
+                      body: body,
+                    },
+                    data: data || {},
+                    android: {
+                      priority: 'high',
+                      notification: {
+                        sound: 'default',
+                        channel_id: data?.type || 'default',
+                      },
+                    },
+                  },
+                }),
+              }
+            );
+
+            const fcmResult = await fcmResponse.json();
+            console.log(`📊 FCM response status: ${fcmResponse.status}`, fcmResult);
+
+            if (fcmResponse.ok) {
+              console.log(`✅ FCM sent successfully to ${tokenPreview}`);
+              results.push({
+                token: tokenData.device_token,
+                success: true,
+                platform: tokenData.platform,
+                messageId: fcmResult.name,
+              });
+            } else {
+              console.error(`❌ FCM error for ${tokenPreview}:`, fcmResult);
+              results.push({
+                token: tokenData.device_token,
+                success: false,
+                error: fcmResult.error?.message || 'FCM send failed',
+                platform: tokenData.platform,
+              });
+            }
           } catch (error) {
-            console.error("❌ Error sending to token:", tokenData.device_token, error);
+            console.error("❌ Error sending to token:", error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             results.push({
               token: tokenData.device_token,
@@ -94,7 +142,7 @@ serve(async (req) => {
           }
         }
       } catch (parseError) {
-        console.error("❌ Error parsing Firebase service account:", parseError);
+        console.error("❌ Error in Firebase OAuth flow:", parseError);
       }
     } else {
       console.log("⚠️ Firebase service account not configured");
@@ -102,7 +150,7 @@ serve(async (req) => {
 
     // Log notification
     await supabase.from("notification_logs").insert({
-      user_id: userId,
+      user_id: userId !== 'all' ? userId : null,
       title,
       body,
       data: data || {},
@@ -128,3 +176,60 @@ serve(async (req) => {
     );
   }
 });
+
+async function buildServiceAccountJWT(serviceAccount: any): Promise<string> {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: serviceAccount.client_email,
+    sub: serviceAccount.client_email,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encoder = new TextEncoder();
+  const headerBase64 = btoa(JSON.stringify(header));
+  const payloadBase64 = btoa(JSON.stringify(payload));
+  const data = `${headerBase64}.${payloadBase64}`;
+
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    pemToArrayBuffer(serviceAccount.private_key),
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', privateKey, encoder.encode(data));
+  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+  return `${data}.${signatureBase64}`;
+}
+
+async function exchangeForAccessToken(jwt: string): Promise<string> {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OAuth token exchange failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+function pemToArrayBuffer(pem: string): ArrayBuffer {
+  const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, '').replace(/-----END PRIVATE KEY-----/, '').replace(/\s/g, '');
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}

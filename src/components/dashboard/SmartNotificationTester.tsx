@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain, TestTube, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Brain, TestTube, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export const SmartNotificationTester = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
   const { toast } = useToast();
+  const { sendBroadcastNotification } = usePushNotifications();
 
   const handleManualTest = async () => {
     setIsLoading(true);
@@ -53,6 +56,35 @@ export const SmartNotificationTester = () => {
     }
   };
 
+  const handleBroadcastTest = async () => {
+    setIsBroadcasting(true);
+    
+    try {
+      console.log('📢 Broadcasting notification to all users...');
+      
+      await sendBroadcastNotification(
+        '💰 Smart Savings Tip!',
+        'Track your expenses daily to save up to 30% more each month! Start building better financial habits today.',
+        { type: 'engagement_test', timestamp: new Date().toISOString() }
+      );
+      
+      toast({
+        title: "Broadcast Sent! 📢",
+        description: "Engaging notification sent to all users successfully",
+      });
+      
+    } catch (error) {
+      console.error('Failed to broadcast notification:', error);
+      toast({
+        title: "Broadcast Failed",
+        description: "Failed to send broadcast notification. Check console for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Card className="w-full max-w-lg">
@@ -73,6 +105,16 @@ export const SmartNotificationTester = () => {
           >
             <TestTube className="h-4 w-4 mr-2" />
             {isLoading ? 'Testing...' : 'Run Smart Notifications Test'}
+          </Button>
+          
+          <Button 
+            onClick={handleBroadcastTest}
+            disabled={isBroadcasting}
+            variant="secondary"
+            className="w-full"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {isBroadcasting ? 'Broadcasting...' : 'Send Test Notification to All Users'}
           </Button>
           
           {testResult && (

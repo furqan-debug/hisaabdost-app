@@ -20,6 +20,19 @@ const generateResetCode = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
 };
 
+// Email validation
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return false;
+  
+  // Block common disposable email domains
+  const disposableDomains = ['tempmail.com', 'throwaway.email', 'guerrillamail.com', '10minutemail.com', 'mailinator.com'];
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (disposableDomains.includes(domain)) return false;
+  
+  return true;
+};
+
 const sendResetEmail = async (email: string, resetCode: string) => {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   
@@ -150,16 +163,18 @@ const handler = async (req: Request): Promise<Response> => {
     const { email }: SendResetCodeRequest = JSON.parse(requestBody);
     console.log("📧 Password reset request received for email:", email);
 
-    if (!email || !email.includes("@")) {
-      console.error("❌ Invalid email provided:", email);
+    if (!email || !isValidEmail(email)) {
+      console.error("❌ Invalid email format");
+      // Return generic success for security (don't reveal if email exists)
       return new Response(
-        JSON.stringify({ error: "Valid email is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: true, message: "If the email exists, a reset code has been sent" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check rate limiting
+    // Check rate limiting - 1 per minute AND max 5 per day
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     console.log("⏰ Checking rate limiting since:", oneMinuteAgo);
     
     const { data: recentCodes, error: rateLimitError } = await supabaseAdmin
@@ -175,7 +190,26 @@ const handler = async (req: Request): Promise<Response> => {
     if (recentCodes && recentCodes.length > 0) {
       console.log("🛑 Rate limit hit for email:", email, "recent codes:", recentCodes.length);
       return new Response(
-        JSON.stringify({ error: "Please wait a minute before requesting another reset link" }),
+        JSON.stringify({ error: "Please wait a minute before requesting another reset code" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check daily limit (max 5 per day)
+    const { data: dailyCodes, error: dailyError } = await supabaseAdmin
+      .from("password_reset_codes")
+      .select("id")
+      .eq("email", email)
+      .gte("created_at", oneDayAgo);
+
+    if (dailyError) {
+      console.error("❌ Daily limit check error:", dailyError);
+    }
+
+    if (dailyCodes && dailyCodes.length >= 5) {
+      console.log("🛑 Daily limit hit for email:", email, "total today:", dailyCodes.length);
+      return new Response(
+        JSON.stringify({ error: "Too many reset attempts. Please try again tomorrow." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -210,11 +244,20 @@ const handler = async (req: Request): Promise<Response> => {
           break;
         }
         
-        // Check if user exists in this batch
-        userExists = usersData.users.some(user => user.email === email);
-        
-        if (userExists) {
-          console.log("👤 User found in page", page);
+        // Check if user exists in this batch and has confirmed email
+        const user = usersData.users.find(u => u.email === email);
+        if (user) {
+          // CRITICAL: Only send reset codes to CONFIRMED email addresses
+          if (!user.email_confirmed_at) {
+            console.log("⚠️ User email not confirmed, skipping reset");
+            // Return generic success for security (don't reveal email not confirmed)
+            return new Response(
+              JSON.stringify({ success: true, message: "If the email exists, a reset code has been sent" }),
+              { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          userExists = true;
+          console.log("👤 User found in page", page, "with confirmed email");
           break;
         }
         
@@ -302,7 +345,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Email error message:", emailError instanceof Error ? emailError.message : 'Unknown email error');
       
       return new Response(
-        JSON.stringify({ error: `Failed to send reset email: ${emailError instanceof Error ? emailError.message : 'Unknown error'}` }),
+        JSON.stringify({ 
+          success: false,
+          error: "Email service is temporarily unavailable. Please try again later or contact support." 
+        }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -313,7 +359,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Handler error stack:", error instanceof Error ? error.stack : 'No stack available');
     
     return new Response(
-      JSON.stringify({ error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` }),
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : "An unexpected error occurred. Please try again later." 
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

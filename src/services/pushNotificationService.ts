@@ -209,11 +209,11 @@ export class PushNotificationService {
       
       const { data, error } = await supabase.functions.invoke('send-push-notification', {
         body: {
+          // Edge function expects userId; use 'all' to broadcast to everyone
+          userId: 'all',
           title: payload.title,
           body: payload.body,
           data: payload.data,
-          sendToAll: payload.sendToAll || false,
-          userIds: payload.userIds || []
         }
       });
 

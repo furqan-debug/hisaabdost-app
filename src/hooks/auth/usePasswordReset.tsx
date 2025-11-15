@@ -16,25 +16,26 @@ export const usePasswordReset = () => {
         console.error("Password reset function error:", error);
         if (error.message?.includes('wait a minute') || error.message?.includes('rate limit')) {
           toast.warning("Too many requests. Please wait a minute before trying again.");
-        } else if (error.message?.includes('Email service not configured')) {
-          toast.error("Email service is not properly configured. Please contact support.");
+        } else if (error.message?.includes('Email service')) {
+          toast.error("Email service is temporarily unavailable. Please try again later.");
         } else {
-          toast.error(error.message || "Error sending password reset link");
+          toast.error(error.message || "Error sending password reset code");
         }
         throw error;
-      } else if (data?.error) {
+      } else if (data?.success === false || data?.error) {
         console.error("Password reset data error:", data.error);
-        if (data.error.includes('wait a minute') || data.error.includes('rate limit')) {
+        const errorMsg = data.error || "Failed to send password reset code";
+        if (errorMsg.includes('wait a minute') || errorMsg.includes('rate limit')) {
           toast.warning("Too many requests. Please wait a minute before trying again.");
-        } else if (data.error.includes('Email service not configured')) {
-          toast.error("Email service is not properly configured. Please contact support.");
+        } else if (errorMsg.includes('Email service')) {
+          toast.error("Email service is temporarily unavailable. Please try again later.");
         } else {
-          toast.error(data.error);
+          toast.error(errorMsg);
         }
-        throw new Error(data.error);
+        throw new Error(errorMsg);
       } else if (data?.success) {
         console.log("Password reset email sent successfully");
-        toast.success("Password reset link sent! Please check your email.");
+        toast.success("Password reset code sent! Please check your email.");
       } else {
         console.error("Unexpected response format:", data);
         toast.error("Unexpected response from server");

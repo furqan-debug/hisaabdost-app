@@ -219,7 +219,7 @@ async function processUserNotifications(
     try {
       const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
         body: {
-          user_id: user.id,
+          userId: user.id,
           title: notification.title,
           body: notification.message,
           data: {
