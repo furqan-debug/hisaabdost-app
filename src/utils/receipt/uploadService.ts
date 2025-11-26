@@ -81,11 +81,11 @@ export async function uploadToSupabase(
       return null;
     }
     
-    // Check file size - 5MB limit
-    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    // Check file size - 50MB limit
+    const maxSizeBytes = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSizeBytes) {
       const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
-      toast.error(`File size exceeds 5MB limit. Your file is ${fileSizeMB}MB. Please choose a smaller image.`);
+      toast.error(`File size exceeds 50MB limit. Your file is ${fileSizeMB}MB. Please choose a smaller image.`);
       return null;
     }
     
@@ -126,9 +126,9 @@ async function performUpload(
   console.log(`Uploading to Supabase: ${file.name} (${fileFingerprint})`);
   
   try {
-    // Compress the image if it's larger than 4MB to ensure it stays under 5MB
+    // Compress the image if it's larger than 40MB to ensure it stays under 50MB
     let fileToUpload = file;
-    const maxSizeKB = 4096; // 4MB
+    const maxSizeKB = 40960; // 40MB
     if (file.size > maxSizeKB * 1024) {
       console.log(`Compressing file from ${(file.size / 1024 / 1024).toFixed(1)}MB`);
       toast.info('Compressing large image...');
@@ -137,9 +137,9 @@ async function performUpload(
     }
     
     // Final size check after compression
-    if (fileToUpload.size > 5 * 1024 * 1024) { // 5MB hard limit
+    if (fileToUpload.size > 50 * 1024 * 1024) { // 50MB hard limit
       const fileSizeMB = (fileToUpload.size / 1024 / 1024).toFixed(1);
-      toast.error(`File size exceeds 5MB limit even after compression (${fileSizeMB}MB). Please use a smaller image.`);
+      toast.error(`File size exceeds 50MB limit even after compression (${fileSizeMB}MB). Please use a smaller image.`);
       return null;
     }
     
@@ -192,7 +192,7 @@ async function performUpload(
         console.log(`Retry upload successful! Public URL: ${publicUrl}`);
         return publicUrl;
       } else if (error.message.includes('Payload too large')) {
-        toast.error('File size exceeds 5MB limit. Please choose a smaller image.');
+        toast.error('File size exceeds 50MB limit. Please choose a smaller image.');
       } else {
         toast.error(`Upload failed: ${error.message}`);
       }
@@ -233,7 +233,7 @@ async function ensureBucketExists(bucketName: string): Promise<boolean> {
     // Try to create the bucket
     const { data: bucketData, error: createError } = await supabase.storage.createBucket(bucketName, {
       public: true,
-      fileSizeLimit: 5242880, // 5MB limit
+      fileSizeLimit: 52428800, // 50MB limit
       allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/heic', 'image/heif', 'image/webp']
     });
     
