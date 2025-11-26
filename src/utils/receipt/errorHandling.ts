@@ -14,12 +14,12 @@ export function validateReceiptFile(file: File): ValidationResult {
     };
   }
   
-  // Check file size (5MB limit)
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  // Check file size (50MB limit)
+  const maxSize = 50 * 1024 * 1024; // 50MB
   if (file.size > maxSize) {
     return {
       isValid: false,
-      error: 'File size exceeds 5MB limit. Please choose a smaller image.'
+      error: 'File size exceeds 50MB limit. Please choose a smaller image.'
     };
   }
   
@@ -113,7 +113,7 @@ export function showReceiptSuccess(message: string) {
 // Enhanced error messages for specific scenarios
 export const ERROR_MESSAGES = {
   FILE_TYPE: 'Please upload an image file (JPG, PNG, etc.)',
-  FILE_SIZE: 'File size exceeds 5MB limit. Please choose a smaller image.',
+  FILE_SIZE: 'File size exceeds 50MB limit. Please choose a smaller image.',
   FILE_TOO_SMALL: 'Image file is too small. Please upload a clear receipt image.',
   BLURRY_IMAGE: 'Image appears blurry. Please upload a clear, well-lit receipt image.',
   NOT_A_RECEIPT: 'This doesn\'t appear to be a receipt. Please upload a clear photo of your receipt.',
