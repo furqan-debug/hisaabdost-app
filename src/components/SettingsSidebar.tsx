@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DollarSign,
   Palette,
@@ -375,11 +376,22 @@ const SettingsSidebar = ({ isOpen, onClose, onParentClose }: SettingsSidebarProp
               <h2 className="font-medium">Account</h2>
             </div>
 
-            {/* User Info */}
+            {/* User Profile with Avatar */}
             <div className="ml-9 mb-4">
-              <div className="p-3 rounded-lg bg-muted/50 border">
-                <p className="text-sm font-medium truncate">{getDisplayName()}</p>
-                <p className="text-xs text-muted-foreground truncate mt-1">{user?.email}</p>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage 
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
+                    alt={user?.email || "User"} 
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    👤
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{getDisplayName()}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{getUsername()}</p>
+                </div>
               </div>
             </div>
 
