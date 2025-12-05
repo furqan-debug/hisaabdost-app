@@ -1,6 +1,5 @@
-
 project_id = "bklfolfivjonzpprytkz"
 
 [storage.buckets.receipts]
-public = true
+public = false
 file_size_limit = 52428800

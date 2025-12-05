@@ -77,9 +77,9 @@ export async function checkFileExists(filePath: string) {
 }
 
 /**
- * Gets a public URL for a specific file
+ * Gets a signed URL for a specific file (secure access)
  * @param filePath Full path of the file
- * @returns Public URL of the file
+ * @returns Signed URL of the file
  */
 export async function getFileUrl(filePath: string) {
   if (!filePath) {
@@ -87,12 +87,17 @@ export async function getFileUrl(filePath: string) {
     return null;
   }
   
-  const { data } = supabase.storage
+  const { data, error } = await supabase.storage
     .from(bucketName)
-    .getPublicUrl(filePath);
+    .createSignedUrl(filePath, 3600); // 1 hour expiry
+  
+  if (error) {
+    console.error(`Error creating signed URL for ${filePath}:`, error);
+    return null;
+  }
     
-  console.log(`Public URL for ${filePath}:`, data.publicUrl);
-  return data.publicUrl;
+  console.log(`Signed URL for ${filePath} created`);
+  return data.signedUrl;
 }
 
 /**
@@ -158,10 +163,10 @@ export async function createReceiptsBucket() {
       return true;
     }
     
-    // Create the bucket with public access
+    // Create the bucket with private access (RLS policies control access)
     const { error } = await supabase.storage.createBucket(bucketName, {
-      public: true,
-      fileSizeLimit: 10485760, // 10MB limit
+      public: false,
+      fileSizeLimit: 52428800, // 50MB limit
     });
     
     if (error) {
