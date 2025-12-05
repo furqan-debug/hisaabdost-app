@@ -34,6 +34,15 @@ export const ChangePasswordDialog = ({ isOpen, onClose }: ChangePasswordDialogPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!currentPassword) {
+      toast({
+        title: "Current Password Required",
+        description: "Please enter your current password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!validatePassword(newPassword)) {
       toast({
         title: "Invalid Password",
@@ -55,6 +64,29 @@ export const ChangePasswordDialog = ({ isOpen, onClose }: ChangePasswordDialogPr
     setIsLoading(true);
 
     try {
+      // Get current user email
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error("Unable to verify user");
+      }
+
+      // Verify current password by re-authenticating
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Incorrect Password",
+          description: "Current password is incorrect",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Update to new password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -96,6 +128,28 @@ export const ChangePasswordDialog = ({ isOpen, onClose }: ChangePasswordDialogPr
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Current Password */}
+          <div className="space-y-2">
+            <Label htmlFor="current-password">Current Password</Label>
+            <div className="relative">
+              <Input
+                id="current-password"
+                type={showCurrentPassword ? "text" : "password"}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
           {/* New Password */}
           <div className="space-y-2">
             <Label htmlFor="new-password">New Password</Label>
