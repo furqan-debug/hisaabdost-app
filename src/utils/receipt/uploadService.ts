@@ -184,13 +184,18 @@ async function performUpload(
           return null;
         }
         
-        // Get the public URL for the retry upload
-        const { data: { publicUrl } } = supabase.storage
+        // Get signed URL for the retry upload
+        const { data: signedData, error: signedError } = await supabase.storage
           .from(bucketName)
-          .getPublicUrl(newStoragePath);
+          .createSignedUrl(newStoragePath, 3600); // 1 hour expiry
           
-        console.log(`Retry upload successful! Public URL: ${publicUrl}`);
-        return publicUrl;
+        if (signedError || !signedData) {
+          console.error('Failed to create signed URL:', signedError);
+          toast.error('Upload succeeded but failed to get URL');
+          return null;
+        }
+        console.log(`Retry upload successful! Signed URL created`);
+        return signedData.signedUrl;
       } else if (error.message.includes('Payload too large')) {
         toast.error('File size exceeds 50MB limit. Please choose a smaller image.');
       } else {
@@ -199,13 +204,19 @@ async function performUpload(
       return null;
     }
     
-    // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get signed URL for secure access
+    const { data: signedData, error: signedError } = await supabase.storage
       .from(bucketName)
-      .getPublicUrl(storagePath);
+      .createSignedUrl(storagePath, 3600); // 1 hour expiry
       
-    console.log(`Upload successful! Public URL: ${publicUrl}`);
-    return publicUrl;
+    if (signedError || !signedData) {
+      console.error('Failed to create signed URL:', signedError);
+      toast.error('Upload succeeded but failed to get URL');
+      return null;
+    }
+      
+    console.log(`Upload successful! Signed URL created`);
+    return signedData.signedUrl;
   } catch (error) {
     console.error("Upload error:", error);
     toast.error('Failed to upload to storage');
@@ -230,9 +241,9 @@ async function ensureBucketExists(bucketName: string): Promise<boolean> {
     
     console.log(`Bucket ${bucketName} may not exist, attempting to create...`);
     
-    // Try to create the bucket
+    // Try to create the bucket (private, with RLS policies)
     const { data: bucketData, error: createError } = await supabase.storage.createBucket(bucketName, {
-      public: true,
+      public: false,
       fileSizeLimit: 52428800, // 50MB limit
       allowedMimeTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/heic', 'image/heif', 'image/webp']
     });
