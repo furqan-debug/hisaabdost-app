@@ -142,6 +142,13 @@ export default {
       borderRadius: {
         'xl': '1rem',
         '2xl': '1.5rem',
+        'ios': '1.5rem',
+        'android': '1rem',
+      },
+      spacing: {
+        'safe': 'env(safe-area-inset-bottom, 0px)',
+        'touch': '48px', // Minimum touch target
+        'touch-ios': '44px',
       },
     },
   },
