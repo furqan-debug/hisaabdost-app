@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileImage, Download, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { refreshReceiptUrl, isSupabaseStorageUrl } from "@/utils/receipt/signedUrlService";
 
 interface ViewReceiptDialogProps {
   receiptUrl: string;
@@ -25,61 +24,74 @@ export function ViewReceiptDialog({
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [displayUrl, setDisplayUrl] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  console.log("ViewReceiptDialog received URL:", receiptUrl);
-  
-  // Check URL validity - Supabase URLs are always valid and permanent
+  // Check URL validity
   const hasValidUrl = receiptUrl && receiptUrl.trim() !== '';
-  const isSupabaseUrl = receiptUrl?.includes('supabase.co') || receiptUrl?.includes('.supabase.co');
   const isBlobUrl = receiptUrl?.startsWith('blob:');
   const isHttpUrl = receiptUrl?.startsWith('http');
+  const isSupabaseUrl = isSupabaseStorageUrl(receiptUrl);
   
-  // Supabase URLs are always permanent and valid
-  const isValidImageUrl = hasValidUrl && (isSupabaseUrl || isBlobUrl || isHttpUrl);
+  const isValidImageUrl = hasValidUrl && (isBlobUrl || isHttpUrl);
   const isPermanentUrl = isSupabaseUrl || (isHttpUrl && !isBlobUrl);
-  
-  console.log("URL analysis:", {
-    hasValidUrl,
-    isSupabaseUrl,
-    isBlobUrl,
-    isHttpUrl,
-    isValidImageUrl,
-    isPermanentUrl,
-    url: receiptUrl
-  });
+
+  // Refresh signed URL for Supabase storage URLs
+  useEffect(() => {
+    async function getSignedUrl() {
+      if (!open || !receiptUrl) return;
+      
+      if (isSupabaseUrl) {
+        setIsRefreshing(true);
+        setIsLoading(true);
+        
+        try {
+          const signedUrl = await refreshReceiptUrl(receiptUrl);
+          if (signedUrl) {
+            setDisplayUrl(signedUrl);
+          } else {
+            // Fallback to original URL if refresh fails
+            setDisplayUrl(receiptUrl);
+          }
+        } catch (error) {
+          console.error("Error refreshing signed URL:", error);
+          setDisplayUrl(receiptUrl);
+        } finally {
+          setIsRefreshing(false);
+        }
+      } else {
+        setDisplayUrl(receiptUrl);
+        setIsLoading(false);
+      }
+    }
+    
+    getSignedUrl();
+  }, [open, receiptUrl, isSupabaseUrl, retryCount]);
 
   const handleImageLoad = () => {
-    console.log("Receipt image loaded successfully");
     setIsLoading(false);
     setImageError(false);
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Receipt image failed to load:", receiptUrl, e);
+  const handleImageError = () => {
     setIsLoading(false);
     setImageError(true);
   };
 
-  const handleRetry = () => {
-    if (!isValidImageUrl) {
-      console.log("Cannot retry: invalid URL");
-      return;
-    }
-    console.log("Retrying image load, attempt:", retryCount + 1);
+  const handleRetry = async () => {
+    if (!isValidImageUrl) return;
+    
     setIsLoading(true);
     setImageError(false);
     setRetryCount(prev => prev + 1);
   };
 
   const handleDownload = () => {
-    if (!isPermanentUrl) {
-      console.log("Cannot download: URL is not permanent");
-      return;
-    }
+    if (!displayUrl || !isPermanentUrl) return;
     
     try {
       const a = document.createElement('a');
-      a.href = receiptUrl;
+      a.href = displayUrl;
       a.download = 'receipt-image.jpg';
       a.target = '_blank';
       document.body.appendChild(a);
@@ -87,43 +99,41 @@ export function ViewReceiptDialog({
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download failed:", error);
-      window.open(receiptUrl, '_blank');
+      window.open(displayUrl, '_blank');
     }
   };
 
-  // Reset states when dialog opens - ALWAYS reset imageError to false
-  React.useEffect(() => {
+  // Reset states when dialog opens
+  useEffect(() => {
     if (open) {
-      console.log("Dialog opened, resetting states for URL:", receiptUrl);
       setIsLoading(true);
-      setImageError(false); // Always reset to false when dialog opens
+      setImageError(false);
       setRetryCount(0);
+      setDisplayUrl(null);
     }
-  }, [open, receiptUrl]); // Depend on both open and receiptUrl
+  }, [open]);
 
   const handleClose = () => {
     setIsLoading(true);
     setImageError(false);
     setRetryCount(0);
+    setDisplayUrl(null);
     onOpenChange(false);
   };
 
-  // Determine error message - be more specific about error types
   const getErrorMessage = () => {
     if (!hasValidUrl) {
       return "No receipt image available.";
     }
-    // Only show expired message for actual blob URLs that start with blob:
     if (isBlobUrl) {
       return "Receipt image URL is temporary and may have expired. Please re-upload the receipt.";
     }
-    // For all other URL types (including Supabase), show generic error
     return "Failed to load receipt image. Please try again.";
   };
 
   const canRetry = isValidImageUrl;
-  const canDownload = isPermanentUrl;
-  const shouldShowImage = isValidImageUrl && !imageError; // Only show image if no error
+  const canDownload = isPermanentUrl && displayUrl;
+  const shouldShowImage = displayUrl && !imageError;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -136,7 +146,7 @@ export function ViewReceiptDialog({
         </DialogHeader>
         
         <div className="relative flex flex-col items-center justify-center min-h-[200px]">
-          {isLoading && shouldShowImage && (
+          {(isLoading || isRefreshing) && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
@@ -144,15 +154,15 @@ export function ViewReceiptDialog({
           
           {shouldShowImage ? (
             <img
-              key={`${receiptUrl}-${retryCount}`}
-              src={receiptUrl}
+              key={`${displayUrl}-${retryCount}`}
+              src={displayUrl}
               alt="Receipt"
               className="max-h-[60vh] max-w-full object-contain rounded-md border"
               onLoad={handleImageLoad}
               onError={handleImageError}
               style={{ opacity: isLoading ? 0.3 : 1 }}
             />
-          ) : (
+          ) : !isLoading && !isRefreshing ? (
             <div className="p-8 text-center border border-dashed rounded-md bg-muted/30">
               <FileImage className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-4">
@@ -170,9 +180,9 @@ export function ViewReceiptDialog({
                 </Button>
               )}
             </div>
-          )}
+          ) : null}
           
-          {!isLoading && shouldShowImage && (
+          {!isLoading && !isRefreshing && shouldShowImage && (
             <p className="mt-2 text-sm text-muted-foreground">
               Click outside or press ESC to close
             </p>

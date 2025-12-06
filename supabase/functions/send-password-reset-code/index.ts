@@ -37,10 +37,9 @@ const sendResetEmail = async (email: string, resetCode: string) => {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   
   console.log("=== EMAIL SENDING DEBUG ===");
-  console.log("Email to send to:", email);
-  console.log("Reset code:", resetCode);
+  console.log("Email to send to:", email.substring(0, 3) + "***@" + email.split('@')[1]);
+  console.log("Reset code: [REDACTED]");
   console.log("Resend API key exists:", resendApiKey ? "YES" : "NO");
-  console.log("Resend API key length:", resendApiKey ? resendApiKey.length : 0);
   
   if (!resendApiKey) {
     console.error("❌ RESEND_API_KEY is not configured");
@@ -303,7 +302,7 @@ const handler = async (req: Request): Promise<Response> => {
     const code = generateResetCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    console.log("🎫 Generated reset code:", code);
+    console.log("🎫 Reset code generated for:", email.substring(0, 3) + "***");
     console.log("⏰ Code expires at:", expiresAt);
 
     // Store the code
