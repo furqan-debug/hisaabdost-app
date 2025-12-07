@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { ExpenseFilters } from "@/components/expenses/ExpenseFilters";
 import { ExpenseTableHeader } from "@/components/expenses/ExpenseTableHeader";
 import { ExpenseRow } from "@/components/expenses/ExpenseRow";
@@ -13,8 +13,8 @@ import { useCurrency } from "@/hooks/use-currency";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CurrencyCode } from "@/utils/currencyUtils";
+import { SwipeableRow } from "@/components/native/SwipeableRow";
 
 interface ExpenseListProps {
   filteredExpenses: Expense[];
@@ -56,39 +56,31 @@ interface MobileExpenseRowProps {
 
 const MobileExpenseRow = ({ expense, selected, onToggle, onDelete, currencyCode }: MobileExpenseRowProps) => {
   return (
-    <div className="bg-card p-3 rounded-lg border border-border/40 mb-3 shadow-sm flex items-center gap-3 transition-colors hover:bg-muted/50">
-      <Checkbox
-        checked={selected}
-        onCheckedChange={onToggle}
-        aria-label="Select expense"
-        className="h-5 w-5"
-      />
-      <div className="flex-grow overflow-hidden">
-        <div className="flex justify-between items-start">
-          <div className="flex-grow overflow-hidden mr-2">
-            <p className="font-medium truncate">{expense.description}</p>
-            <p className="text-xs text-muted-foreground">{expense.category}</p>
+    <SwipeableRow
+      onDelete={() => onDelete(expense.id)}
+      className="mb-3"
+    >
+      <div className="bg-card p-3 rounded-lg border border-border/40 shadow-sm flex items-center gap-3 transition-colors active:bg-muted/50">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={onToggle}
+          aria-label="Select expense"
+          className="h-5 w-5"
+        />
+        <div className="flex-grow overflow-hidden">
+          <div className="flex justify-between items-start">
+            <div className="flex-grow overflow-hidden mr-2">
+              <p className="font-medium truncate">{expense.description}</p>
+              <p className="text-xs text-muted-foreground">{expense.category}</p>
+            </div>
+            <p className="font-semibold text-base whitespace-nowrap">{formatCurrency(expense.amount, currencyCode)}</p>
           </div>
-          <p className="font-semibold text-base whitespace-nowrap">{formatCurrency(expense.amount, currencyCode)}</p>
-        </div>
-        <div className="flex justify-between items-center mt-1">
-          <p className="text-xs text-muted-foreground">{format(new Date(expense.date), "MMM dd, yyyy")}</p>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onDelete(expense.id)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex justify-between items-center mt-1">
+            <p className="text-xs text-muted-foreground">{format(new Date(expense.date), "MMM dd, yyyy")}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </SwipeableRow>
   );
 };
 

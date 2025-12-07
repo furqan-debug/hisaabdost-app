@@ -2,14 +2,14 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
+import { PageTransition } from '@/components/native/PageTransition';
 
 interface LayoutContainerProps {
   children: React.ReactNode;
   isMobile: boolean;
-  pageTransition: boolean;
 }
 
-export function LayoutContainer({ children, isMobile, pageTransition }: LayoutContainerProps) {
+export function LayoutContainer({ children, isMobile }: LayoutContainerProps) {
   const location = useLocation();
   const isBudgetRoute = location.pathname.includes('/budget');
 
@@ -27,9 +27,7 @@ export function LayoutContainer({ children, isMobile, pageTransition }: LayoutCo
       className={cn(
         "flex-1 overflow-x-hidden mobile-safe-viewport",
         isMobile ? "pb-20" : "pb-8",
-        isBudgetRoute ? "px-0" : "px-2 md:px-6",
-        pageTransition ? "opacity-95 translate-y-1" : "opacity-100 translate-y-0",
-        "transition-all duration-300"
+        isBudgetRoute ? "px-0" : "px-2 md:px-6"
       )}
       style={{ 
         paddingTop: getMobileTopSpacing()
@@ -37,10 +35,11 @@ export function LayoutContainer({ children, isMobile, pageTransition }: LayoutCo
     >
       <div className={cn(
         "mx-auto w-full overflow-x-hidden",
-        isMobile ? "max-w-full" : "max-w-5xl",
-        pageTransition ? "animate-fade-in" : ""
+        isMobile ? "max-w-full" : "max-w-5xl"
       )}>
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </div>
     </main>
   );
