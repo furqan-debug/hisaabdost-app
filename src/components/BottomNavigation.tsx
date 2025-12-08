@@ -67,18 +67,17 @@ export function BottomNavigation() {
         )}>
           
           {/* Finny AI FAB - Absolutely positioned above navbar */}
-          <motion.div
-            whileTap={{ scale: 0.9 }}
-            className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/4 z-10"
-          >
-            <Button
-              onClick={handleFabClick}
-              size="icon"
-              className="h-16 w-16 rounded-full bg-white dark:bg-white shadow-2xl shadow-primary/50 hover:shadow-primary/70 active:ring-4 active:ring-primary/40 transition-all duration-200 border-4 border-primary/30 dark:border-primary/50 p-3"
-            >
-              <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Finny AI" className="w-full h-full object-contain" />
-            </Button>
-          </motion.div>
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/4 z-10">
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <Button
+                onClick={handleFabClick}
+                size="icon"
+                className="h-16 w-16 rounded-full bg-white dark:bg-white shadow-2xl shadow-primary/50 hover:shadow-primary/70 active:ring-4 active:ring-primary/40 transition-all duration-200 border-4 border-primary/30 dark:border-primary/50 p-3"
+              >
+                <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Finny AI" className="w-full h-full object-contain" />
+              </Button>
+            </motion.div>
+          </div>
 
           <div className="relative grid grid-cols-5 h-16 items-center max-w-[480px] mx-auto px-2 overflow-visible">
             {/* First 2 items: Home, Expenses */}
