@@ -408,27 +408,55 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Update failed_attempts for tokens
-    if (tokensToUpdate.length > 0) {
-      console.log(`📊 Updating ${tokensToUpdate.length} token failure counts...`);
-      
-      for (const update of tokensToUpdate) {
-        if (update.increment) {
-          await supabase
-            .from("user_device_tokens")
-            .update({ 
-              failed_attempts: tokens.find(t => t.id === update.id)!.failed_attempts + 1,
-              last_failure_at: new Date().toISOString()
-            })
-            .eq("id", update.id);
+    // Update failed_attempts for tokens and auto-delete stale ones
+    const tokensToDelete: string[] = [];
+    const tokensToIncrement: { id: string; newCount: number }[] = [];
+    const tokensToReset: string[] = [];
+
+    tokensToUpdate.forEach((update) => {
+      const token = tokens.find(t => t.id === update.id)!;
+      if (update.increment) {
+        const newCount = token.failed_attempts + 1;
+        if (newCount >= 3) {
+          // Auto-delete tokens with 3+ failures
+          tokensToDelete.push(update.id);
         } else {
-          await supabase
-            .from("user_device_tokens")
-            .update({ failed_attempts: 0 })
-            .eq("id", update.id);
+          tokensToIncrement.push({ id: update.id, newCount });
         }
+      } else {
+        tokensToReset.push(update.id);
       }
+    });
+
+    // Delete stale tokens
+    if (tokensToDelete.length > 0) {
+      console.log(`🗑️ Auto-deleting ${tokensToDelete.length} stale tokens...`);
+      await supabase
+        .from("user_device_tokens")
+        .delete()
+        .in("id", tokensToDelete);
     }
+
+    // Update failed attempts for remaining tokens
+    for (const update of tokensToIncrement) {
+      await supabase
+        .from("user_device_tokens")
+        .update({ 
+          failed_attempts: update.newCount,
+          last_failure_at: new Date().toISOString()
+        })
+        .eq("id", update.id);
+    }
+
+    // Reset successful tokens
+    if (tokensToReset.length > 0) {
+      await supabase
+        .from("user_device_tokens")
+        .update({ failed_attempts: 0 })
+        .in("id", tokensToReset);
+    }
+
+    console.log(`📊 Token cleanup: ${tokensToDelete.length} deleted, ${tokensToIncrement.length} incremented, ${tokensToReset.length} reset`);
 
     // Log notification to history
     const uniqueUserIds = [...new Set(tokens.map(t => t.user_id))];
