@@ -16,8 +16,8 @@ export function LayoutContainer({ children, isMobile }: LayoutContainerProps) {
   // Calculate proper top spacing accounting for safe areas and navbar
   const getMobileTopSpacing = () => {
     if (isMobile) {
-      // Just navbar + safe area + extra spacing  
-      return "calc(3.5rem + max(env(safe-area-inset-top, 44px), 44px) + 1rem)";
+      // Navbar height (3.5rem) + safe area + small buffer
+      return "calc(3.5rem + env(safe-area-inset-top, 20px) + 0.5rem)";
     }
     return "calc(3.5rem + env(safe-area-inset-top, 0px))";
   };

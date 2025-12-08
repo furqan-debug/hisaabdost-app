@@ -63,7 +63,7 @@ export const EnhancedDashboardContent = ({
   const handleExpenseAdded = () => {
     console.log('Dashboard: Expense added - React Query will handle refresh automatically');
   };
-  return <div className="space-y--4 pb-6">
+  return <div className="space-y-4 pb-6">
       {/* Hidden file inputs using ReceiptFileInput for consistency with expenses page */}
       <div className="hidden">
         <input
