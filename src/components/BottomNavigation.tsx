@@ -58,7 +58,7 @@ export function BottomNavigation() {
   
   return (
     <>
-      <div className="fixed left-0 right-0 bottom-0 z-50 w-full overflow-visible pt-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="fixed left-0 right-0 bottom-0 z-50 w-full overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className={cn(
           "relative backdrop-blur-xl border-t border-border/30 overflow-visible",
           isIOS 
@@ -67,7 +67,7 @@ export function BottomNavigation() {
         )}>
           
           {/* Finny AI FAB - Absolutely positioned above navbar */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/4 z-10">
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 z-10">
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 onClick={handleFabClick}
