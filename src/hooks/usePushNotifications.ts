@@ -13,7 +13,8 @@ export function usePushNotifications() {
         isInitializing.current = true;
         console.log('🔔 Initializing push notifications for authenticated user');
         try {
-          await PushNotificationService.initialize();
+          // Force re-initialize to refresh token on every app open
+          await PushNotificationService.forceInitialize();
           
           // Auto-request permission for better UX
           const permission = await PushNotificationService.requestPermission();
