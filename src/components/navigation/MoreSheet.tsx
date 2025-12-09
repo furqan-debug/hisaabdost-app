@@ -24,11 +24,11 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleItemClick = (path: string | null, label: string) => {
+    onOpenChange(false); // Always close MoreSheet first
     if (label === "Settings") {
-      setSettingsOpen(true);
+      setTimeout(() => setSettingsOpen(true), 150); // Small delay for smooth transition
     } else if (path) {
       navigate(path);
-      onOpenChange(false);
     }
   };
 
