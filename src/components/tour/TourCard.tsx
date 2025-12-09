@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { TourStep } from './types';
 import { FinnyDemoPreview } from './FinnyDemoPreview';
-import { FinnyGuide } from './FinnyGuide';
 
 interface TourCardProps {
   step: TourStep;
@@ -54,16 +53,17 @@ export const TourCard: React.FC<TourCardProps> = ({
 
   const getSlideDirection = () => {
     switch (placement) {
-      case 'top': return { y: 20, x: 0 };
-      case 'bottom': return { y: -20, x: 0 };
-      case 'left': return { x: 20, y: 0 };
-      case 'right': return { x: -20, y: 0 };
-      default: return { y: 20, x: 0 };
+      case 'top': return { y: 10 };
+      case 'bottom': return { y: -10 };
+      case 'left': return { x: 10 };
+      case 'right': return { x: -10 };
+      default: return { y: 10 };
     }
   };
 
   const slideDir = getSlideDirection();
   const progress = ((currentStep + 1) / totalSteps) * 100;
+  const cardWidth = Math.min(320, window.innerWidth - 32);
 
   return (
     <motion.div
@@ -75,73 +75,43 @@ export const TourCard: React.FC<TourCardProps> = ({
         position: 'fixed',
         top: position.top,
         left: position.left,
-        zIndex: 10002,
+        width: cardWidth,
+        zIndex: 9995,
       }}
-      className="w-[300px] sm:w-[340px]"
     >
-      {/* Glassmorphism card */}
-      <div className="relative rounded-3xl overflow-hidden">
-        {/* Animated gradient border */}
-        <motion.div
-          className="absolute -inset-[1px] rounded-3xl"
-          style={{
-            background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.3), hsl(var(--primary)))',
-            backgroundSize: '200% 100%',
-          }}
-          animate={{
-            backgroundPosition: ['0% 0%', '200% 0%'],
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-        />
-
+      {/* Card */}
+      <div className="relative rounded-2xl overflow-hidden bg-card border border-border shadow-xl">
         {/* Card content */}
-        <div className="relative bg-card/95 backdrop-blur-xl rounded-3xl p-5">
-          {/* Background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 rounded-3xl pointer-events-none" />
-
+        <div className="relative p-4">
           {/* Skip button */}
           <button
             onClick={onSkip}
-            className="absolute top-4 right-4 p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all z-10"
+            className="absolute top-3 right-3 p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors z-10"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* Header with Finny */}
-          <div className="relative flex items-start gap-4 mb-4">
-            <FinnyGuide size="sm" expression="happy" />
-            
-            <div className="flex-1 pt-1">
-              {/* Icon and Title */}
-              <div className="flex items-center gap-2">
-                {Icon && (
-                  <motion.div
-                    animate={{ 
-                      rotate: [0, -10, 10, 0],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-primary"
-                  >
-                    <Icon className="w-5 h-5" />
-                  </motion.div>
-                )}
-                <h3 className="text-lg font-semibold text-foreground pr-6">
-                  {step.title}
-                </h3>
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-3 pr-8">
+            {Icon && (
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-primary" />
               </div>
-            </div>
+            )}
+            <h3 className="text-base font-semibold text-foreground leading-tight">
+              {step.title}
+            </h3>
           </div>
 
           {/* Description with typewriter */}
-          <div className="min-h-[48px] mb-4">
+          <div className="min-h-[40px] mb-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
               {displayedText}
               {isTyping && (
                 <motion.span
                   animate={{ opacity: [1, 0] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
-                  className="inline-block w-0.5 h-4 bg-primary ml-0.5 align-middle"
+                  className="inline-block w-0.5 h-3.5 bg-primary ml-0.5 align-middle"
                 />
               )}
             </p>
@@ -150,66 +120,43 @@ export const TourCard: React.FC<TourCardProps> = ({
           {/* Finny Demo Preview */}
           {showFinnyDemo && <FinnyDemoPreview />}
 
-          {/* Arc progress indicator */}
-          <div className="relative flex justify-center mb-4">
-            <svg width="120" height="24" viewBox="0 0 120 24">
-              {/* Background arc */}
-              <path
-                d="M 10 20 Q 60 0 110 20"
-                fill="none"
-                stroke="hsl(var(--muted))"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              {/* Progress arc */}
-              <motion.path
-                d="M 10 20 Q 60 0 110 20"
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="3"
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: progress / 100 }}
+          {/* Progress bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Step {currentStep + 1} of {totalSteps}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-primary rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
                 transition={{ type: 'spring', stiffness: 100, damping: 20 }}
               />
-            </svg>
-            {/* Step indicator */}
-            <div className="absolute top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
-              {currentStep + 1} / {totalSteps}
             </div>
           </div>
 
           {/* Navigation buttons */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={onPrev}
               disabled={currentStep === 0}
-              className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+              className="text-muted-foreground hover:text-foreground disabled:opacity-30 h-9"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
 
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="sm"
-                onClick={onNext}
-                className="relative bg-primary hover:bg-primary/90 text-primary-foreground px-6 shadow-lg shadow-primary/25 overflow-hidden"
-              >
-                {/* Shimmer */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                />
-                <span className="relative flex items-center">
-                  {isLastStep ? 'Finish' : 'Next'}
-                  {!isLastStep && <ChevronRight className="w-4 h-4 ml-1" />}
-                </span>
-              </Button>
-            </motion.div>
+            <Button
+              size="sm"
+              onClick={onNext}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-5 h-9"
+            >
+              {isLastStep ? 'Finish' : 'Next'}
+              {!isLastStep && <ChevronRight className="w-4 h-4 ml-1" />}
+            </Button>
           </div>
         </div>
       </div>

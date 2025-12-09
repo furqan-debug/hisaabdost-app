@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TourCard } from './TourCard';
 import { tourSteps } from './tourSteps';
 import { TargetRect } from './types';
-import { ParticleField } from './ParticleField';
 
 interface CinematicSpotlightProps {
   currentStep: number;
@@ -14,6 +13,14 @@ interface CinematicSpotlightProps {
   onCloseMoreSheet?: () => void;
 }
 
+// Consistent z-index hierarchy
+const Z_INDEX = {
+  overlay: 9990,
+  spotlight: 9991,
+  border: 9992,
+  card: 9995,
+};
+
 export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
   currentStep,
   onNext,
@@ -23,13 +30,12 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
   onCloseMoreSheet,
 }) => {
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
-  const [prevRect, setPrevRect] = useState<TargetRect | null>(null);
   const [multipleRects, setMultipleRects] = useState<TargetRect[]>([]);
   const [isWaitingForElement, setIsWaitingForElement] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const waitIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const step = tourSteps[currentStep];
-  const padding = 12;
+  const padding = 8;
 
   const getElementRect = useCallback((elementId: string): TargetRect | null => {
     const element = document.getElementById(elementId);
@@ -50,11 +56,8 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
     
     const rect = getElementRect(step.targetId);
     if (rect) {
-      setPrevRect(targetRect);
       setTargetRect(rect);
       setIsWaitingForElement(false);
-      setIsTransitioning(true);
-      setTimeout(() => setIsTransitioning(false), 400);
       
       const element = document.getElementById(step.targetId);
       element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -68,7 +71,7 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
     } else {
       setMultipleRects([]);
     }
-  }, [step, getElementRect, targetRect]);
+  }, [step, getElementRect]);
 
   useEffect(() => {
     if (!step) return;
@@ -132,40 +135,64 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
   if (!step || (!targetRect && !isWaitingForElement)) return null;
 
   const getTooltipPosition = () => {
-    if (!targetRect) return { top: window.innerHeight / 2, left: window.innerWidth / 2 - 160 };
+    if (!targetRect) return { top: window.innerHeight / 2, left: window.innerWidth / 2 - 150 };
     
-    const tooltipWidth = 340;
-    const tooltipHeight = 320;
-    const gap = 20;
+    const tooltipWidth = Math.min(320, window.innerWidth - 32);
+    const cardHeight = cardRef.current?.offsetHeight || 260;
+    const gap = 16;
+    const safeArea = { top: 16, bottom: 16, left: 16, right: 16 };
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
     let top = 0;
     let left = 0;
+    let actualPlacement = step.position;
 
+    // Calculate preferred position
     switch (step.position) {
       case 'bottom':
         top = targetRect.top + targetRect.height + gap;
         left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+        // Fallback to top if not enough space below
+        if (top + cardHeight > viewportHeight - safeArea.bottom) {
+          top = targetRect.top - cardHeight - gap;
+          actualPlacement = 'top';
+        }
         break;
       case 'top':
-        top = targetRect.top - tooltipHeight - gap;
+        top = targetRect.top - cardHeight - gap;
         left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+        // Fallback to bottom if not enough space above
+        if (top < safeArea.top) {
+          top = targetRect.top + targetRect.height + gap;
+          actualPlacement = 'bottom';
+        }
         break;
       case 'left':
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+        top = targetRect.top + targetRect.height / 2 - cardHeight / 2;
         left = targetRect.left - tooltipWidth - gap;
+        // Fallback to right if not enough space on left
+        if (left < safeArea.left) {
+          left = targetRect.left + targetRect.width + gap;
+          actualPlacement = 'right';
+        }
         break;
       case 'right':
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+        top = targetRect.top + targetRect.height / 2 - cardHeight / 2;
         left = targetRect.left + targetRect.width + gap;
+        // Fallback to left if not enough space on right
+        if (left + tooltipWidth > viewportWidth - safeArea.right) {
+          left = targetRect.left - tooltipWidth - gap;
+          actualPlacement = 'left';
+        }
         break;
     }
 
-    left = Math.max(16, Math.min(left, viewportWidth - tooltipWidth - 16));
-    top = Math.max(16, Math.min(top, viewportHeight - tooltipHeight - 16));
+    // Final boundary checks
+    left = Math.max(safeArea.left, Math.min(left, viewportWidth - tooltipWidth - safeArea.right));
+    top = Math.max(safeArea.top, Math.min(top, viewportHeight - cardHeight - safeArea.bottom));
 
-    return { top, left };
+    return { top, left, placement: actualPlacement };
   };
 
   const tooltipPosition = getTooltipPosition();
@@ -177,30 +204,12 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.4 }}
-        className="fixed inset-0 z-[10001] pointer-events-auto"
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 overflow-hidden pointer-events-auto"
+        style={{ zIndex: Z_INDEX.overlay }}
         onClick={onSkip}
       >
-        {/* Aurora gradient overlay */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse at 30% 20%, hsl(var(--primary) / 0.15) 0%, transparent 40%),
-              radial-gradient(ellipse at 70% 80%, hsl(var(--primary) / 0.1) 0%, transparent 40%),
-              linear-gradient(to bottom, hsl(var(--background) / 0.95), hsl(var(--background) / 0.98))
-            `,
-          }}
-          animate={{
-            opacity: [0.9, 1, 0.9],
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-
-        {/* Ambient particles */}
-        <ParticleField count={15} />
-
-        {/* Dark overlay with morphing spotlight cutout */}
+        {/* Simple dark overlay with spotlight cutout */}
         {targetRect && (
           <motion.div
             className="absolute inset-0"
@@ -219,66 +228,35 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
                 100% 0%
               )`,
             }}
-            transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
             style={{
-              background: 'linear-gradient(135deg, hsl(var(--background) / 0.85) 0%, hsl(var(--background) / 0.9) 100%)',
-              backdropFilter: 'blur(4px)',
+              background: 'hsl(var(--background) / 0.9)',
+              zIndex: Z_INDEX.overlay,
             }}
           />
         )}
 
-        {/* Spotlight glow ring */}
+        {/* Spotlight border */}
         {targetRect && (
           <motion.div
-            className="absolute rounded-2xl pointer-events-none"
-            initial={{ opacity: 0, scale: 1.2 }}
+            className="absolute rounded-xl pointer-events-none"
+            style={{ zIndex: Z_INDEX.border }}
+            initial={{ opacity: 0 }}
             animate={{
               opacity: 1,
-              scale: 1,
               top: targetRect.top,
               left: targetRect.left,
               width: targetRect.width,
               height: targetRect.height,
             }}
-            transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
           >
-            {/* Animated border */}
-            <motion.div
-              className="absolute inset-0 rounded-2xl"
+            {/* Border */}
+            <div 
+              className="absolute inset-0 rounded-xl border-2 border-primary"
               style={{
-                background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.5), hsl(var(--primary)))',
-                backgroundSize: '200% 100%',
-                padding: '2px',
+                boxShadow: '0 0 20px hsl(var(--primary) / 0.3), inset 0 0 20px hsl(var(--primary) / 0.1)',
               }}
-              animate={{
-                backgroundPosition: ['0% 0%', '200% 0%'],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-            >
-              <div className="w-full h-full rounded-2xl bg-transparent" />
-            </motion.div>
-
-            {/* Glow effect */}
-            <motion.div
-              className="absolute -inset-2 rounded-3xl opacity-50"
-              style={{
-                background: 'radial-gradient(ellipse at center, hsl(var(--primary) / 0.4) 0%, transparent 70%)',
-              }}
-              animate={{
-                opacity: [0.3, 0.6, 0.3],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            />
-
-            {/* Ripple effect */}
-            <motion.div
-              className="absolute inset-0 rounded-2xl border-2 border-primary/40"
-              animate={{
-                scale: [1, 1.15],
-                opacity: [0.6, 0],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
             />
           </motion.div>
         )}
@@ -287,34 +265,26 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
         {multipleRects.map((rect, index) => (
           <motion.div
             key={`multi-${index}`}
-            className="absolute rounded-xl pointer-events-none"
-            initial={{ opacity: 0, scale: 0.9 }}
+            className="absolute rounded-lg pointer-events-none border-2 border-primary/60"
+            style={{ zIndex: Z_INDEX.border }}
+            initial={{ opacity: 0 }}
             animate={{
               opacity: 1,
-              scale: 1,
               top: rect.top,
               left: rect.left,
               width: rect.width,
               height: rect.height,
             }}
             transition={{ delay: index * 0.1, type: 'spring', stiffness: 200 }}
-          >
-            <motion.div
-              className="absolute inset-0 rounded-xl border-2 border-primary/60"
-              animate={{
-                boxShadow: [
-                  '0 0 15px hsl(var(--primary) / 0.3)',
-                  '0 0 25px hsl(var(--primary) / 0.5)',
-                  '0 0 15px hsl(var(--primary) / 0.3)',
-                ],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.2 }}
-            />
-          </motion.div>
+          />
         ))}
 
         {/* Tour Card */}
-        <div onClick={(e) => e.stopPropagation()}>
+        <div 
+          ref={cardRef}
+          onClick={(e) => e.stopPropagation()}
+          style={{ zIndex: Z_INDEX.card }}
+        >
           <TourCard
             step={step}
             currentStep={currentStep}
@@ -323,7 +293,7 @@ export const CinematicSpotlight: React.FC<CinematicSpotlightProps> = ({
             onPrev={onPrev}
             onSkip={onSkip}
             position={tooltipPosition}
-            placement={step.position}
+            placement={tooltipPosition.placement || step.position}
           />
         </div>
       </motion.div>
