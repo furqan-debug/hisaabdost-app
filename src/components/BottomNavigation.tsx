@@ -67,7 +67,7 @@ export function BottomNavigation() {
         )}>
           
           {/* Finny AI FAB - Absolutely positioned above navbar */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 z-10">
+          <div id="tour-finny-fab" className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 z-10">
             <motion.div whileTap={{ scale: 0.9 }}>
               <Button
                 onClick={handleFabClick}
@@ -79,7 +79,7 @@ export function BottomNavigation() {
             </motion.div>
           </div>
 
-          <div className="relative grid grid-cols-5 h-16 items-center max-w-[480px] mx-auto px-2 overflow-visible">
+          <div id="tour-bottom-nav" className="relative grid grid-cols-5 h-16 items-center max-w-[480px] mx-auto px-2 overflow-visible">
             {/* First 2 items: Home, Expenses */}
             {navItems.slice(0, 2).map((item) => {
               const isActive = location.pathname === item.path;
