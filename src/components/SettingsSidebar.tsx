@@ -20,6 +20,7 @@ import {
   Shield,
   Lock,
   Key,
+  RotateCcw,
 } from "lucide-react";
 import { ChangePasswordDialog } from "@/components/settings/ChangePasswordDialog";
 import { useTheme } from "next-themes";
@@ -33,6 +34,7 @@ import { CURRENCY_OPTIONS, CurrencyCode } from "@/utils/currencyUtils";
 import { toast } from "@/components/ui/use-toast";
 import { useIncomeDate } from "@/hooks/useIncomeDate";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAppTour } from "@/hooks/useAppTour";
 interface SettingsSidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -51,8 +53,19 @@ const SettingsSidebar = ({ isOpen, onClose, onParentClose }: SettingsSidebarProp
   const { user } = useAuth();
   const { signOut } = useSignOut();
   const { getDisplayName, getUsername } = useUserProfile(user);
+  const { resetTour } = useAppTour();
   const navigate = useNavigate();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  const handleRestartTour = () => {
+    resetTour();
+    onClose();
+    onParentClose?.();
+    toast({
+      title: "Tour Restarted",
+      description: "The app tour will begin shortly.",
+    });
+  };
   const handleMonthlySummaryClick = () => {
     navigate("/app/history");
     onClose();
@@ -379,6 +392,10 @@ const SettingsSidebar = ({ isOpen, onClose, onParentClose }: SettingsSidebarProp
               <Button variant="ghost" className="w-full justify-start" onClick={handleAppGuideClick}>
                 <BookOpen className="w-4 h-4 mr-3" />
                 App Guide
+              </Button>
+              <Button variant="ghost" className="w-full justify-start" onClick={handleRestartTour}>
+                <RotateCcw className="w-4 h-4 mr-3" />
+                Restart App Tour
               </Button>
             </div>
           </div>
