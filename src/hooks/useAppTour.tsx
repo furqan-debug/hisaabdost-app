@@ -1,8 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const APP_TOUR_KEY = 'hasCompletedAppTour';
 
-export function useAppTour() {
+interface AppTourContextType {
+  showTour: boolean;
+  currentStep: number;
+  nextStep: (totalSteps: number) => void;
+  prevStep: () => void;
+  skipTour: () => void;
+  completeTour: () => void;
+  resetTour: () => void;
+}
+
+const AppTourContext = createContext<AppTourContextType | null>(null);
+
+export function AppTourProvider({ children }: { children: React.ReactNode }) {
   const [showTour, setShowTour] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -47,16 +59,31 @@ export function useAppTour() {
   const resetTour = useCallback(() => {
     localStorage.removeItem(APP_TOUR_KEY);
     setCurrentStep(0);
-    setShowTour(true);
+    // Small delay to ensure sheets are closed
+    setTimeout(() => {
+      setShowTour(true);
+    }, 500);
   }, []);
 
-  return {
-    showTour,
-    currentStep,
-    nextStep,
-    prevStep,
-    skipTour,
-    completeTour,
-    resetTour,
-  };
+  return (
+    <AppTourContext.Provider value={{
+      showTour,
+      currentStep,
+      nextStep,
+      prevStep,
+      skipTour,
+      completeTour,
+      resetTour,
+    }}>
+      {children}
+    </AppTourContext.Provider>
+  );
+}
+
+export function useAppTour() {
+  const context = useContext(AppTourContext);
+  if (!context) {
+    throw new Error('useAppTour must be used within an AppTourProvider');
+  }
+  return context;
 }
