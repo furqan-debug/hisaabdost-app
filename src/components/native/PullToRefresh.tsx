@@ -92,7 +92,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   }, [isPulling, pullDistance, isRefreshing, onRefresh]);
 
   return (
-    <div className={cn('relative flex flex-col flex-1 min-h-0', className)}>
+    <div className={cn('relative flex-1 flex flex-col overflow-hidden', className)}>
       {/* Pull indicator */}
       <motion.div 
         className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center justify-center"
@@ -121,7 +121,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
       {/* Content */}
       <motion.div
         ref={containerRef}
-        className="flex-1 overflow-y-auto touch-scroll"
+        className="flex-1 overflow-y-auto touch-scroll min-h-0"
         style={{ y: pullDistance }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
