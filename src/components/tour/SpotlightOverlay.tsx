@@ -197,7 +197,7 @@ export const SpotlightOverlay: React.FC<SpotlightOverlayProps> = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-[10000] pointer-events-auto"
+        className="fixed inset-0 z-[10001] pointer-events-auto"
         onClick={onSkip}
       >
         {/* Dark overlay with spotlight cutout */}

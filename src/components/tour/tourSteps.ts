@@ -52,7 +52,7 @@ export const tourSteps: TourStep[] = [
   },
   {
     id: 'more-menu',
-    targetId: 'tour-more-button',
+    targetId: 'tour-more-sheet-content',
     title: 'Explore More Features',
     description: 'Access Analytics, Goals, Loans, and Family Management from here.',
     position: 'top',
@@ -60,7 +60,8 @@ export const tourSteps: TourStep[] = [
     action: 'click',
     actionPayload: {
       triggerId: 'tour-more-button'
-    }
+    },
+    waitForElement: true,
   },
   {
     id: 'family-management',
