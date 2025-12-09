@@ -13,115 +13,63 @@ export const FinnyGuide: React.FC<FinnyGuideProps> = ({
   animate = true,
   expression = 'happy'
 }) => {
-  const sizeClasses = {
-    sm: 'w-12 h-12',
-    md: 'w-20 h-20',
-    lg: 'w-32 h-32',
+  const sizeConfig = {
+    sm: { container: 'w-10 h-10', sparkle: 'w-3 h-3', hand: 'text-lg' },
+    md: { container: 'w-16 h-16', sparkle: 'w-4 h-4', hand: 'text-xl' },
+    lg: { container: 'w-24 h-24', sparkle: 'w-5 h-5', hand: 'text-2xl' },
   };
 
-  const iconSizes = {
-    sm: 'w-6 h-6',
-    md: 'w-10 h-10',
-    lg: 'w-16 h-16',
-  };
+  const config = sizeConfig[size];
 
   return (
-    <motion.div
-      className={`relative ${sizeClasses[size]}`}
-      animate={animate ? {
-        y: [0, -8, 0],
-      } : {}}
-      transition={{
-        duration: 2,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    >
-      {/* Glow effect */}
+    <div className="relative inline-flex">
       <motion.div
-        className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/60 to-primary/20 blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-      
-      {/* Main body */}
-      <motion.div
-        className="relative w-full h-full rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 shadow-2xl shadow-primary/30 flex items-center justify-center border-2 border-primary-foreground/20"
-        animate={expression === 'excited' ? {
-          scale: [1, 1.05, 1],
-        } : {}}
-        transition={{
-          duration: 0.5,
-          repeat: expression === 'excited' ? Infinity : 0,
-        }}
+        className={`relative ${config.container}`}
+        animate={animate ? { y: [0, -4, 0] } : {}}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* Face */}
-        <div className="relative flex flex-col items-center justify-center">
-          {/* Eyes */}
-          <div className="flex gap-2 mb-1">
-            <motion.div 
-              className="w-2 h-2 rounded-full bg-primary-foreground"
-              animate={expression === 'waving' ? {
-                scaleY: [1, 0.2, 1],
-              } : {}}
-              transition={{ duration: 0.3, delay: 0.5, repeat: Infinity, repeatDelay: 2 }}
-            />
-            <motion.div 
-              className="w-2 h-2 rounded-full bg-primary-foreground"
-              animate={expression === 'waving' ? {
-                scaleY: [1, 0.2, 1],
-              } : {}}
-              transition={{ duration: 0.3, delay: 0.5, repeat: Infinity, repeatDelay: 2 }}
-            />
+        {/* Main body */}
+        <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center border border-primary-foreground/10">
+          {/* Face */}
+          <div className="flex flex-col items-center justify-center">
+            {/* Eyes */}
+            <div className="flex gap-1.5 mb-0.5">
+              <motion.div 
+                className="w-1.5 h-1.5 rounded-full bg-primary-foreground"
+                animate={expression === 'waving' ? { scaleY: [1, 0.2, 1] } : {}}
+                transition={{ duration: 0.3, repeat: Infinity, repeatDelay: 2 }}
+              />
+              <motion.div 
+                className="w-1.5 h-1.5 rounded-full bg-primary-foreground"
+                animate={expression === 'waving' ? { scaleY: [1, 0.2, 1] } : {}}
+                transition={{ duration: 0.3, repeat: Infinity, repeatDelay: 2 }}
+              />
+            </div>
+            {/* Mouth */}
+            <div className="w-3 h-1.5 border-b-2 border-primary-foreground rounded-b-full" />
           </div>
-          
-          {/* Mouth */}
-          <motion.div 
-            className="w-4 h-2 border-b-2 border-primary-foreground rounded-b-full"
-            animate={expression === 'happy' || expression === 'excited' ? {} : {}}
-          />
+
+          {/* Sparkle */}
+          <motion.div
+            className="absolute -top-0.5 -right-0.5"
+            animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <Sparkles className={`${config.sparkle} text-yellow-400`} />
+          </motion.div>
         </div>
 
-        {/* Sparkle icon overlay */}
-        <motion.div
-          className="absolute -top-1 -right-1"
-          animate={{
-            rotate: [0, 15, -15, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        >
-          <Sparkles className={`${size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-5 h-5' : 'w-8 h-8'} text-yellow-400 drop-shadow-lg`} />
-        </motion.div>
+        {/* Waving hand - positioned outside but contained */}
+        {expression === 'waving' && (
+          <motion.div
+            className="absolute -right-1 top-1/2 -translate-y-1/2"
+            animate={{ rotate: [0, 15, -15, 15, 0] }}
+            transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 1 }}
+          >
+            <span className={config.hand}>👋</span>
+          </motion.div>
+        )}
       </motion.div>
-
-      {/* Waving hand for waving expression */}
-      {expression === 'waving' && (
-        <motion.div
-          className="absolute -right-2 top-1/2"
-          animate={{
-            rotate: [0, 20, -20, 20, 0],
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            repeatDelay: 1,
-          }}
-        >
-          <span className="text-2xl">👋</span>
-        </motion.div>
-      )}
-    </motion.div>
+    </div>
   );
 };
