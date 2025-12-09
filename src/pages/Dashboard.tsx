@@ -11,6 +11,7 @@ import { useOptimizedDataSync } from "@/hooks/useOptimizedDataSync";
 import { ContextIndicator } from "@/components/ui/context-indicator";
 import { PullToRefresh } from "@/components/native/PullToRefresh";
 import { useQueryClient } from "@tanstack/react-query";
+import { AppTour } from "@/components/tour/AppTour";
 
 /**
  * Dashboard page component that displays financial overview
@@ -85,33 +86,38 @@ const Dashboard = () => {
   }
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <div className="pb-24 md:pb-8">
-        <div className="px-3 md:px-6 pt-4 pb-2">
-          <ContextIndicator />
+    <>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="pb-24 md:pb-8">
+          <div className="px-3 md:px-6 pt-4 pb-2">
+            <ContextIndicator />
+          </div>
+          <EnhancedDashboardContent
+              isNewUser={isNewUser}
+              isLoading={isLoading}
+              totalBalance={totalBalance}
+              monthlyExpenses={monthlyExpenses}
+              monthlyIncome={monthlyIncome}
+              setMonthlyIncome={setMonthlyIncome}
+              savingsRate={savingsRate}
+              formatPercentage={formatPercentage}
+              expenses={expenses}
+              allExpenses={allExpenses}
+              isExpensesLoading={isExpensesLoading}
+              expenseToEdit={expenseToEdit}
+              setExpenseToEdit={setExpenseToEdit}
+              showAddExpense={showAddExpense}
+              setShowAddExpense={setShowAddExpense}
+              chartType={chartType}
+              setChartType={setChartType}
+              walletBalance={walletBalance}
+            />
         </div>
-        <EnhancedDashboardContent
-            isNewUser={isNewUser}
-            isLoading={isLoading}
-            totalBalance={totalBalance}
-            monthlyExpenses={monthlyExpenses}
-            monthlyIncome={monthlyIncome}
-            setMonthlyIncome={setMonthlyIncome}
-            savingsRate={savingsRate}
-            formatPercentage={formatPercentage}
-            expenses={expenses}
-            allExpenses={allExpenses}
-            isExpensesLoading={isExpensesLoading}
-            expenseToEdit={expenseToEdit}
-            setExpenseToEdit={setExpenseToEdit}
-            showAddExpense={showAddExpense}
-            setShowAddExpense={setShowAddExpense}
-            chartType={chartType}
-            setChartType={setChartType}
-            walletBalance={walletBalance}
-          />
-      </div>
-    </PullToRefresh>
+      </PullToRefresh>
+      
+      {/* App Tour for first-time users */}
+      <AppTour />
+    </>
   );
 };
 
