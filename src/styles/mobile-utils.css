@@ -278,8 +278,18 @@
   overscroll-behavior: contain;
 }
 
-/* Touch-friendly dropdown scrolling */
+/* Touch-friendly scrolling - NO max-height for main content */
 .touch-scroll {
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Touch-friendly dropdown scrolling with max-height limit */
+.dropdown-touch-scroll {
   -webkit-overflow-scrolling: touch !important;
   touch-action: pan-y !important;
   overscroll-behavior-y: contain !important;
@@ -287,6 +297,10 @@
   max-height: 40vh !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+}
+
+.dropdown-touch-scroll::-webkit-scrollbar {
+  display: none !important;
 }
 
 .touch-scroll::-webkit-scrollbar {
