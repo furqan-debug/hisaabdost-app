@@ -11,6 +11,7 @@ import { CurrencyProvider } from "@/hooks/use-currency";
 import { MonthProvider } from "@/hooks/use-month-context";
 import { FamilyProvider } from "@/hooks/useFamilyContext";
 import { FinnyProvider } from "@/components/finny/FinnyProvider";
+import { AppTourProvider } from "@/hooks/useAppTour";
 import { OfflineProvider } from "@/components/offline/OfflineProvider";
 import { AppOpenAd } from "@/components/ads/AppOpenAd";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -99,6 +100,7 @@ const App = () => {
                     <MonthProvider>
                       <FamilyProvider>
                         <FinnyProvider>
+                          <AppTourProvider>
                       <BrowserRouter>
                         <ScrollToTop />
                         <Suspense fallback={<OptimizedLoadingScreen />}>
@@ -147,6 +149,7 @@ const App = () => {
                     
                     <Toaster />
                     <Sonner />
+                          </AppTourProvider>
                       </FinnyProvider>
                     </FamilyProvider>
                   </MonthProvider>
