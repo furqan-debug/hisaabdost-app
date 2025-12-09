@@ -35,7 +35,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[70vh] rounded-t-3xl">
+        <SheetContent id="tour-more-sheet-content" side="bottom" className="h-[70vh] rounded-t-3xl z-[9999]">
           <SheetHeader>
             <SheetTitle>More Options</SheetTitle>
             <SheetDescription>
