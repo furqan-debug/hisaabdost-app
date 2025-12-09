@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { TourStep } from './types';
+import { FinnyDemoPreview } from './FinnyDemoPreview';
 
 interface TourTooltipProps {
   step: TourStep;
@@ -27,6 +28,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
 }) => {
   const Icon = step.icon;
   const isLastStep = currentStep === totalSteps - 1;
+  const showFinnyDemo = step.action === 'demo' && step.actionPayload?.demoType === 'finny-preview';
 
   // Calculate transform origin based on placement
   const getTransformStyle = () => {
@@ -87,12 +89,15 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
           </div>
 
           {/* Description */}
-          <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">
             {step.description}
           </p>
 
+          {/* Finny Demo Preview */}
+          {showFinnyDemo && <FinnyDemoPreview />}
+
           {/* Progress dots */}
-          <div className="flex items-center justify-center gap-1.5 mb-4">
+          <div className={`flex items-center justify-center gap-1.5 ${showFinnyDemo ? 'mt-4' : ''} mb-4`}>
             {Array.from({ length: totalSteps }).map((_, i) => (
               <motion.div
                 key={i}

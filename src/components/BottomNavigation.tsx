@@ -169,6 +169,7 @@ export function BottomNavigation() {
                     </Link>
                   ) : (
                     <motion.button 
+                      id="tour-more-button"
                       whileTap={{ scale: 0.9 }}
                       onClick={handleMoreClick}
                       className="flex items-center justify-center w-full"
