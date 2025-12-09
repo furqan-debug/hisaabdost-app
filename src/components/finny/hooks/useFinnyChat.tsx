@@ -12,7 +12,7 @@ export const useFinnyChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
   const [chatKey, setChatKey] = useState<number>(Date.now());
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(true); // Start initialized for instant open
   const [user, setUser] = useState<any>(null);
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>('USD'); // Default fallback
   

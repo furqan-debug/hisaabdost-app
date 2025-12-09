@@ -9,8 +9,9 @@ import { useFinnyExpenses } from './hooks/useFinnyExpenses';
 import { useFinnyBudgets } from './hooks/useFinnyBudgets';
 import { logFinnyInvoked } from '@/utils/appsflyerTracking';
 
-// Lazy load the FinnyChat component
-const FinnyChat = lazy(() => import('./FinnyChat'));
+// Preload FinnyChat component immediately to avoid delay on first click
+const FinnyChatPromise = import('./FinnyChat');
+const FinnyChat = lazy(() => FinnyChatPromise);
 
 export const FinnyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const {

@@ -44,8 +44,8 @@ export function BottomNavigation() {
     await selectionChanged();
   };
 
-  const handleFabClick = async () => {
-    await lightImpact();
+  const handleFabClick = () => {
+    lightImpact(); // Fire and forget - don't block
     openChat();
   };
 
