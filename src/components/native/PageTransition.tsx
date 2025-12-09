@@ -47,10 +47,8 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
       initial="initial"
       animate="animate"
       transition={transition}
-      className="flex-1 flex flex-col min-h-0"
-      style={{ 
-        width: '100%',
-      }}
+      className="flex-1 flex flex-col"
+      style={{ width: '100%' }}
     >
       {children}
     </motion.div>

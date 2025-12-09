@@ -25,7 +25,7 @@ export function LayoutContainer({ children, isMobile }: LayoutContainerProps) {
   return (
     <main 
       className={cn(
-        "flex-1 flex flex-col min-h-0 overflow-x-hidden",
+        "flex-1 flex flex-col overflow-hidden",
         isMobile ? "pb-20" : "pb-8",
         isBudgetRoute ? "px-0" : "px-2 md:px-6"
       )}
@@ -34,7 +34,7 @@ export function LayoutContainer({ children, isMobile }: LayoutContainerProps) {
       }}
     >
       <div className={cn(
-        "mx-auto w-full flex-1 flex flex-col min-h-0 overflow-x-hidden",
+        "mx-auto w-full flex-1 flex flex-col overflow-auto",
         isMobile ? "max-w-full" : "max-w-5xl"
       )}>
         <PageTransition>
