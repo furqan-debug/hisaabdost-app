@@ -58,13 +58,9 @@ const SettingsSidebar = ({ isOpen, onClose, onParentClose }: SettingsSidebarProp
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const handleRestartTour = () => {
-    resetTour();
     onClose();
     onParentClose?.();
-    toast({
-      title: "Tour Restarted",
-      description: "The app tour will begin shortly.",
-    });
+    resetTour();
   };
   const handleMonthlySummaryClick = () => {
     navigate("/app/history");
