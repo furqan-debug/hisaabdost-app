@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useDashboardData } from "@/components/dashboard/useDashboardData";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { EnhancedDashboardContent } from "@/components/dashboard/EnhancedDashboardContent";
@@ -9,6 +9,9 @@ import { useMonthCarryover } from "@/hooks/useMonthCarryover";
 import { useAnalyticsNotifications } from "@/hooks/useAnalyticsNotifications";
 import { useOptimizedDataSync } from "@/hooks/useOptimizedDataSync";
 import { ContextIndicator } from "@/components/ui/context-indicator";
+import { PullToRefresh } from "@/components/native/PullToRefresh";
+import { useQueryClient } from "@tanstack/react-query";
+import { AppTour } from "@/components/tour/AppTour";
 
 /**
  * Dashboard page component that displays financial overview
@@ -16,6 +19,7 @@ import { ContextIndicator } from "@/components/ui/context-indicator";
  */
 const Dashboard = () => {
   const { isLoading: isMonthDataLoading } = useMonthContext();
+  const queryClient = useQueryClient();
   
   // Initialize optimized data synchronization
   const { syncInProgress } = useOptimizedDataSync();
@@ -40,6 +44,13 @@ const Dashboard = () => {
     formatPercentage,
     setMonthlyIncome
   } = useDashboardData();
+
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    await queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    await queryClient.invalidateQueries({ queryKey: ['wallet'] });
+  }, [queryClient]);
 
   // Ensure any lingering modal overlays are cleared when arriving here
   useEffect(() => {
@@ -75,31 +86,38 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="pb-24 md:pb-8">
-      <div className="px-3 md:px-6 pt-4 pb-2">
-        <ContextIndicator />
-      </div>
-      <EnhancedDashboardContent
-          isNewUser={isNewUser}
-          isLoading={isLoading}
-          totalBalance={totalBalance}
-          monthlyExpenses={monthlyExpenses}
-          monthlyIncome={monthlyIncome}
-          setMonthlyIncome={setMonthlyIncome}
-          savingsRate={savingsRate}
-          formatPercentage={formatPercentage}
-          expenses={expenses}
-          allExpenses={allExpenses}
-          isExpensesLoading={isExpensesLoading}
-          expenseToEdit={expenseToEdit}
-          setExpenseToEdit={setExpenseToEdit}
-          showAddExpense={showAddExpense}
-          setShowAddExpense={setShowAddExpense}
-          chartType={chartType}
-          setChartType={setChartType}
-          walletBalance={walletBalance}
-        />
-    </div>
+    <>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="pb-24 md:pb-8">
+          <div className="px-3 md:px-6 pt-4 pb-2">
+            <ContextIndicator />
+          </div>
+          <EnhancedDashboardContent
+              isNewUser={isNewUser}
+              isLoading={isLoading}
+              totalBalance={totalBalance}
+              monthlyExpenses={monthlyExpenses}
+              monthlyIncome={monthlyIncome}
+              setMonthlyIncome={setMonthlyIncome}
+              savingsRate={savingsRate}
+              formatPercentage={formatPercentage}
+              expenses={expenses}
+              allExpenses={allExpenses}
+              isExpensesLoading={isExpensesLoading}
+              expenseToEdit={expenseToEdit}
+              setExpenseToEdit={setExpenseToEdit}
+              showAddExpense={showAddExpense}
+              setShowAddExpense={setShowAddExpense}
+              chartType={chartType}
+              setChartType={setChartType}
+              walletBalance={walletBalance}
+            />
+        </div>
+      </PullToRefresh>
+      
+      {/* App Tour for first-time users */}
+      <AppTour />
+    </>
   );
 };
 

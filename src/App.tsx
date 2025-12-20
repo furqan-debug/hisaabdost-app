@@ -11,9 +11,11 @@ import { CurrencyProvider } from "@/hooks/use-currency";
 import { MonthProvider } from "@/hooks/use-month-context";
 import { FamilyProvider } from "@/hooks/useFamilyContext";
 import { FinnyProvider } from "@/components/finny/FinnyProvider";
+import { AppTourProvider } from "@/hooks/useAppTour";
 import { OfflineProvider } from "@/components/offline/OfflineProvider";
 import { AppOpenAd } from "@/components/ads/AppOpenAd";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFirstTimeVisit } from "@/hooks/useFirstTimeVisit";
@@ -99,7 +101,9 @@ const App = () => {
                     <MonthProvider>
                       <FamilyProvider>
                         <FinnyProvider>
+                          <AppTourProvider>
                       <BrowserRouter>
+                        <AnalyticsProvider>
                         <ScrollToTop />
                         <Suspense fallback={<OptimizedLoadingScreen />}>
                           <Routes>
@@ -108,6 +112,7 @@ const App = () => {
                             
                             {/* Public routes */}
                             <Route path="/auth" element={<Auth />} />
+                            
                             
                             
                             {/* Protected routes with Layout */}
@@ -136,6 +141,7 @@ const App = () => {
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </Suspense>
+                        </AnalyticsProvider>
                     </BrowserRouter>
                     
                     {/* Native App Open Ad */}
@@ -147,6 +153,7 @@ const App = () => {
                     
                     <Toaster />
                     <Sonner />
+                          </AppTourProvider>
                       </FinnyProvider>
                     </FamilyProvider>
                   </MonthProvider>

@@ -2,3 +2,21 @@ project_id = "bklfolfivjonzpprytkz"
 
 [functions.scheduled-push-notifications]
 verify_jwt = false
+
+[functions.cleanup-stale-tokens]
+verify_jwt = false
+
+[functions.send-verification-email]
+verify_jwt = false
+
+[functions.verify-email-code]
+verify_jwt = false
+
+[functions.send-password-reset-code]
+verify_jwt = false
+
+[functions.verify-reset-code]
+verify_jwt = false
+
+[functions.update-password-with-code]
+verify_jwt = false

@@ -41,22 +41,16 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const transition = isIOS ? springTransition : tweenTransition;
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={location.pathname}
-        variants={variants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        transition={transition}
-        style={{ 
-          width: '100%', 
-          height: '100%',
-          willChange: 'transform, opacity',
-        }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={location.pathname}
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      transition={transition}
+      className="flex-1 flex flex-col"
+      style={{ width: '100%' }}
+    >
+      {children}
+    </motion.div>
   );
 };

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useExpenseFilter } from "@/hooks/use-expense-filter";
 import { useExpenseSelection } from "@/hooks/use-expense-selection";
 import { useExpenseDelete } from "@/components/expenses/useExpenseDelete";
@@ -11,17 +11,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useExpenseQueries } from "@/hooks/useExpenseQueries";
 import { useFinnyDataSync } from "@/hooks/useFinnyDataSync";
 import { ContextIndicator } from "@/components/ui/context-indicator";
+import { PullToRefresh } from "@/components/native/PullToRefresh";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Expenses = () => {
   const { deleteExpense, deleteMultipleExpenses } = useExpenseDelete();
   const { selectedMonth, isLoading: isMonthDataLoading } = useMonthContext();
   const { expenses, isLoading: isExpensesLoading } = useExpenseQueries();
+  const queryClient = useQueryClient();
   
   // Enable comprehensive data synchronization - this handles all cache invalidation
   useFinnyDataSync();
   
   const [showAddExpense, setShowAddExpense] = useState(false);
 
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+  }, [queryClient]);
 
   const {
     searchTerm,
@@ -98,39 +105,41 @@ const Expenses = () => {
   }
 
   return (
-    <div className="space-y-5 px-3 md:px-6 pt-4 pb-24 md:pb-8">
-        <ContextIndicator />
-        <ExpenseHeader
-          selectedExpenses={selectedExpenses}
-          onDeleteSelected={handleDeleteSelected}
-          onAddExpense={handleExpenseAdded}
-          showAddExpense={showAddExpense}
-          setShowAddExpense={setShowAddExpense}
-          exportToCSV={exportToCSV}
-          exportToPDF={exportToPDF}
-        />
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-5 px-3 md:px-6 pt-4 pb-24 md:pb-8">
+          <ContextIndicator />
+          <ExpenseHeader
+            selectedExpenses={selectedExpenses}
+            onDeleteSelected={handleDeleteSelected}
+            onAddExpense={handleExpenseAdded}
+            showAddExpense={showAddExpense}
+            setShowAddExpense={setShowAddExpense}
+            exportToCSV={exportToCSV}
+            exportToPDF={exportToPDF}
+          />
 
-        <ExpenseList
-          filteredExpenses={filteredExpenses}
-          isLoading={isLoading}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          sortConfig={sortConfig}
-          handleSort={handleSort}
-          selectedExpenses={selectedExpenses}
-          toggleSelectAll={() => toggleSelectAll(filteredExpenses.map(exp => exp.id))}
-          toggleExpenseSelection={toggleExpenseSelection}
-          onAddExpense={handleAddExpense}
-          onDelete={handleSingleDelete}
-          totalFilteredAmount={totalFilteredAmount}
-          selectedMonth={selectedMonth}
-          useCustomDateRange={useCustomDateRange}
-        />
-    </div>
+          <ExpenseList
+            filteredExpenses={filteredExpenses}
+            isLoading={isLoading}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            sortConfig={sortConfig}
+            handleSort={handleSort}
+            selectedExpenses={selectedExpenses}
+            toggleSelectAll={() => toggleSelectAll(filteredExpenses.map(exp => exp.id))}
+            toggleExpenseSelection={toggleExpenseSelection}
+            onAddExpense={handleAddExpense}
+            onDelete={handleSingleDelete}
+            totalFilteredAmount={totalFilteredAmount}
+            selectedMonth={selectedMonth}
+            useCustomDateRange={useCustomDateRange}
+          />
+      </div>
+    </PullToRefresh>
   );
 };
 

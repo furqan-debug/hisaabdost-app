@@ -44,8 +44,8 @@ export function BottomNavigation() {
     await selectionChanged();
   };
 
-  const handleFabClick = async () => {
-    await lightImpact();
+  const handleFabClick = () => {
+    lightImpact(); // Fire and forget - don't block
     openChat();
   };
 
@@ -58,7 +58,7 @@ export function BottomNavigation() {
   
   return (
     <>
-      <div className="fixed left-0 right-0 bottom-0 z-50 w-full overflow-visible pt-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="fixed left-0 right-0 bottom-0 z-50 w-full overflow-visible" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className={cn(
           "relative backdrop-blur-xl border-t border-border/30 overflow-visible",
           isIOS 
@@ -67,20 +67,19 @@ export function BottomNavigation() {
         )}>
           
           {/* Finny AI FAB - Absolutely positioned above navbar */}
-          <motion.div
-            whileTap={{ scale: 0.9 }}
-            className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/4 z-10"
-          >
-            <Button
-              onClick={handleFabClick}
-              size="icon"
-              className="h-16 w-16 rounded-full bg-white dark:bg-white shadow-2xl shadow-primary/50 hover:shadow-primary/70 active:ring-4 active:ring-primary/40 transition-all duration-200 border-4 border-primary/30 dark:border-primary/50 p-3"
-            >
-              <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Finny AI" className="w-full h-full object-contain" />
-            </Button>
-          </motion.div>
+          <div id="tour-finny-fab" className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 z-10">
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <Button
+                onClick={handleFabClick}
+                size="icon"
+                className="h-16 w-16 rounded-full bg-white dark:bg-white shadow-2xl shadow-primary/50 hover:shadow-primary/70 active:ring-4 active:ring-primary/40 transition-all duration-200 border-4 border-primary/30 dark:border-primary/50 p-3"
+              >
+                <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Finny AI" className="w-full h-full object-contain" />
+              </Button>
+            </motion.div>
+          </div>
 
-          <div className="relative grid grid-cols-5 h-16 items-center max-w-[480px] mx-auto px-2 overflow-visible">
+          <div id="tour-bottom-nav" className="relative grid grid-cols-5 h-16 items-center max-w-[480px] mx-auto px-2 overflow-visible">
             {/* First 2 items: Home, Expenses */}
             {navItems.slice(0, 2).map((item) => {
               const isActive = location.pathname === item.path;
@@ -170,6 +169,7 @@ export function BottomNavigation() {
                     </Link>
                   ) : (
                     <motion.button 
+                      id="tour-more-button"
                       whileTap={{ scale: 0.9 }}
                       onClick={handleMoreClick}
                       className="flex items-center justify-center w-full"

@@ -51,6 +51,7 @@ export function QuickActionsWidget({
 
   const actions = [
     {
+      id: 'tour-quick-action-expense',
       title: 'Add Expense',
       icon: Plus,
       onClick: handleAddExpense,
@@ -58,6 +59,7 @@ export function QuickActionsWidget({
       description: 'Quick manual entry'
     },
     {
+      id: 'tour-quick-action-receipt',
       title: 'Upload Receipt',
       icon: Upload,
       onClick: handleUploadReceipt,
@@ -65,6 +67,7 @@ export function QuickActionsWidget({
       description: 'Scan from gallery'
     },
     {
+      id: 'tour-quick-action-camera',
       title: 'Take Photo',
       icon: Camera,
       onClick: handleTakePhoto,
@@ -72,6 +75,7 @@ export function QuickActionsWidget({
       description: 'Camera capture'
     },
     {
+      id: 'tour-quick-action-budget',
       title: 'Add Budget',
       icon: PlusCircle,
       onClick: handleAddBudget,
@@ -81,7 +85,7 @@ export function QuickActionsWidget({
   ];
 
   return (
-    <Card className="cursor-default">
+    <Card id="tour-quick-actions" className="cursor-default">
       <CardHeader>
         <CardTitle className="text-lg">Quick Actions</CardTitle>
       </CardHeader>
@@ -95,6 +99,7 @@ export function QuickActionsWidget({
               transition={{ delay: index * 0.1 }}
             >
               <Button
+                id={action.id}
                 variant="outline"
                 onClick={action.onClick}
                 className="h-auto p-4 flex flex-col items-center gap-2 w-full hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95"
