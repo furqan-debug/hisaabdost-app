@@ -1,7 +1,6 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { logCompleteRegistration } from "@/utils/appsflyerTracking";
 
 export const useSignUp = () => {
   const signUp = async (email: string, password: string, fullName: string) => {
