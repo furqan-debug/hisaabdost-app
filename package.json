@@ -11,8 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@awesome-cordova-plugins/appsflyer": "^8.1.0",
-    "@awesome-cordova-plugins/core": "^8.1.0",
     "@capacitor-community/admob": "^7.0.3",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.0.1",

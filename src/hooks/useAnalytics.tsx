@@ -149,7 +149,6 @@ function getPageTitle(path: string): string {
     '/app/guide': 'App Guide',
     '/app/manage-categories': 'Manage Categories',
     '/app/manage-funds': 'Manage Funds',
-    '/analytics-admin': 'Analytics Admin',
   };
   
   return titles[path] || path.split('/').pop() || 'Unknown';
