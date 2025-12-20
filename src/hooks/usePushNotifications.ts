@@ -1,6 +1,6 @@
-
 import { useEffect, useRef } from 'react';
 import { PushNotificationService } from '@/services/pushNotificationService';
+import { LocalNotificationService } from '@/services/localNotificationService';
 import { useAuth } from '@/lib/auth';
 
 export function usePushNotifications() {
@@ -20,6 +20,17 @@ export function usePushNotifications() {
           const permission = await PushNotificationService.requestPermission();
           console.log('📱 Push notification permission:', permission);
           
+          // Request local notification permission as well
+          await LocalNotificationService.requestLocalPermission();
+          
+          // Optionally schedule a daily reminder (e.g., 8pm)
+          await LocalNotificationService.scheduleDailyReminder(
+            1001,
+            `Hi ${user.name}!`,
+            'Don\'t forget to add your expenses today.',
+            20, // 8pm
+            0
+          );
         } catch (error) {
           console.log('❌ Push notification initialization failed:', error);
         } finally {

@@ -15,10 +15,10 @@ interface SpendingTrendsWidgetProps {
   }>;
   isLoading?: boolean;
 }
-export function SpendingTrendsWidget({
+const SpendingTrendsWidgetComponent = ({
   expenses,
   isLoading
-}: SpendingTrendsWidgetProps) {
+}: SpendingTrendsWidgetProps) => {
   const {
     currencyCode
   } = useCurrency();
@@ -165,4 +165,6 @@ export function SpendingTrendsWidget({
         </div>
       </CardContent>
     </Card>;
-}
+};
+
+export const SpendingTrendsWidget = React.memo(SpendingTrendsWidgetComponent);

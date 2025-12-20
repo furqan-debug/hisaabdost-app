@@ -17,7 +17,7 @@ interface TrendsCardProps {
 
 type ViewType = 'weekly' | 'monthly' | 'quarterly';
 
-export function TrendsCard({ expenses }: TrendsCardProps) {
+const TrendsCardComponent = ({ expenses }: TrendsCardProps) => {
   const { categories } = useAllCategories();
   const { currencyCode } = useCurrency();
   const isMobile = useIsMobile();
@@ -382,4 +382,6 @@ export function TrendsCard({ expenses }: TrendsCardProps) {
       </Card>
     </motion.div>
   );
-}
+};
+
+export const TrendsCard = React.memo(TrendsCardComponent);

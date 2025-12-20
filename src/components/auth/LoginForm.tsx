@@ -58,7 +58,8 @@ export const LoginForm = ({ onForgotPassword, onSignUpClick }: LoginFormProps) =
                   <Input
                     type="email"
                     placeholder="you@example.com"
-                    autoComplete="email"
+                    autoComplete="username"
+                    inputMode="email"
                     {...field}
                   />
                 </FormControl>

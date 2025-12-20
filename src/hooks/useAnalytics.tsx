@@ -89,30 +89,6 @@ export function useFinnyTracking() {
   return { trackFinnyOpened, trackFinnyClosed, trackFinnyMessage };
 }
 
-// Hook for tracking tour progress
-export function useTourTracking() {
-  const trackTourStarted = useCallback(() => {
-    analytics.track('tour_started', 'feature');
-  }, []);
-
-  const trackTourStep = useCallback((stepIndex: number, stepId: string) => {
-    analytics.track('tour_step_completed', 'feature', {
-      step_index: stepIndex,
-      step_id: stepId,
-    });
-  }, []);
-
-  const trackTourCompleted = useCallback((totalSteps: number) => {
-    analytics.track('tour_completed', 'feature', { total_steps: totalSteps });
-  }, []);
-
-  const trackTourSkipped = useCallback((atStep: number) => {
-    analytics.track('tour_skipped', 'feature', { skipped_at_step: atStep });
-  }, []);
-
-  return { trackTourStarted, trackTourStep, trackTourCompleted, trackTourSkipped };
-}
-
 // Hook for tracking expense actions
 export function useExpenseTracking() {
   const trackExpenseAdded = useCallback((amount: number, category: string) => {

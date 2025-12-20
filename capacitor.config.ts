@@ -41,6 +41,10 @@ const config: CapacitorConfig = {
     CapacitorHttp: {
       enabled: true
     },
+    Keyboard: {
+      resize: "body",
+      style: "dark"
+    },
     WebView: {
       allowFileAccess: true,
       androidScheme: "https",

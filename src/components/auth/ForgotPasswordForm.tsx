@@ -49,7 +49,8 @@ export const ForgotPasswordForm = ({ onBackToLogin, onCodeSent }: ForgotPassword
           value={resetEmail}
           onChange={(e) => setResetEmail(e.target.value)}
           required
-          autoComplete="email"
+          autoComplete="username"
+          inputMode="email"
         />
       </div>
 

@@ -25,7 +25,8 @@ export function useExpenseQueries() {
       let query = supabase
         .from('expenses')
         .select('*')
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(1000); // Limit to prevent performance issues with large datasets
 
       // Filter by family context
       if (isPersonalMode) {

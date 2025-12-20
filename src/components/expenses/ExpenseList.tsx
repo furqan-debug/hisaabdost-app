@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { CurrencyCode } from "@/utils/currencyUtils";
 import { SwipeableRow } from "@/components/native/SwipeableRow";
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface ExpenseListProps {
   filteredExpenses: Expense[];
@@ -58,7 +59,6 @@ const MobileExpenseRow = ({ expense, selected, onToggle, onDelete, currencyCode 
   return (
     <SwipeableRow
       onDelete={() => onDelete(expense.id)}
-      className="mb-3"
     >
       <div className="bg-card p-3 rounded-lg border border-border/40 shadow-sm flex items-center gap-3 transition-colors active:bg-muted/50">
         <Checkbox
@@ -107,6 +107,14 @@ export function ExpenseList({
   const { currencyCode } = useCurrency();
   const isMobile = useIsMobile();
 
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: filteredExpenses.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 90, // approximate height including margin
+    overscan: 5,
+  });
+
   if (isMobile) {
     return (
       <Card>
@@ -144,7 +152,7 @@ export function ExpenseList({
               selectedMonth={selectedMonth} 
               useCustomDateRange={useCustomDateRange} 
             />
-            <div className="no-scrollbar touch-scroll-container">
+            <div ref={parentRef} className="no-scrollbar touch-scroll-container" style={{ height: '60vh', overflow: 'auto' }}>
               {isLoading ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">Loading expenses...</p>
@@ -160,16 +168,27 @@ export function ExpenseList({
                   </div>
                 </div>
               ) : (
-                <div>
-                  {filteredExpenses.map(expense => (
-                    <MobileExpenseRow
-                      key={expense.id}
-                      expense={expense}
-                      selected={selectedExpenses.has(expense.id)}
-                      onToggle={() => toggleExpenseSelection(expense.id)}
-                      onDelete={onDelete}
-                      currencyCode={currencyCode}
-                    />
+                <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+                  {virtualizer.getVirtualItems().map(virtualItem => (
+                    <div
+                      key={virtualItem.key}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
+                      <MobileExpenseRow
+                        expense={filteredExpenses[virtualItem.index]}
+                        selected={selectedExpenses.has(filteredExpenses[virtualItem.index].id)}
+                        onToggle={() => toggleExpenseSelection(filteredExpenses[virtualItem.index].id)}
+                        onDelete={onDelete}
+                        currencyCode={currencyCode}
+                      />
+                    </div>
                   ))}
                 </div>
               )}

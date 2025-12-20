@@ -10,12 +10,12 @@ android {
         applicationId "app.lovable.ccb1b3984ebf47e1ac451522f307f140"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 20
+        versionName "2.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // ✅ Modern Gradle toolchain setup (forces JVM 17 for all Java + Kotlin tasks)
+    // ✅ Use JVM 17 for modern builds
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -32,21 +32,33 @@ android {
     }
 }
 
-
+// ✅ Repository setup
 repositories {
+    google()
+    mavenCentral()
     flatDir {
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }
 
 dependencies {
+    // ✅ Core AndroidX + Lifecycle
+    implementation "androidx.lifecycle:lifecycle-process:2.6.2"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.appsflyer:af-android-sdk:6.17.3'
-    implementation 'com.android.installreferrer:installreferrer:2.2'
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
 
+    // ✅ Google Mobile Ads SDK (only once)
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
+
+    // ✅ Firebase (BoM ensures version sync)
+    implementation platform('com.google.firebase:firebase-bom:33.4.0')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // ✅ Capacitor
     implementation project(':capacitor-android')
     implementation project(':capacitor-cordova-android-plugins')
 
@@ -54,21 +66,10 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
-
-    // ✅ Firebase (BoM ensures version compatibility)
-    implementation platform('com.google.firebase:firebase-bom:33.4.0')
-    implementation 'com.google.firebase:firebase-messaging'
-    implementation 'com.google.firebase:firebase-analytics'
-    
-    // ✅ Google Mobile Ads SDK for App Open Ads
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
-    
-    // ✅ AppsFlyer Ad Revenue SDK
-    implementation 'com.appsflyer:adrevenue:6.9.0'
 }
 
 // ✅ Required for Capacitor
 apply from: 'capacitor.build.gradle'
 
-// ✅ Apply Google services plugin once, at the end
+// ✅ Apply Google services plugin (keep last)
 apply plugin: 'com.google.gms.google-services'

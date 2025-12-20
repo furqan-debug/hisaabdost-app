@@ -11,6 +11,7 @@ import { ExpenseFilters } from "@/components/expenses/ExpenseFilters";
 import { AnalyticsHeader } from "@/components/analytics/AnalyticsHeader";
 import { AnalyticsTabs } from "@/components/analytics/AnalyticsTabs";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
+import { debounce } from "@/utils/performanceOptimizations";
 
 export default function Analytics() {
   const { user } = useAuth();
@@ -27,19 +28,18 @@ export default function Analytics() {
 
   // Real-time event listeners for data synchronization
   useEffect(() => {
-    const handleExpenseEvents = async () => {
-      console.log('🔄 Analytics: Expense data changed, refreshing analytics');
-      
-      // Invalidate and refetch analytics queries immediately
-      await queryClient.invalidateQueries({ 
+    const debouncedInvalidate = debounce(() => {
+      queryClient.invalidateQueries({ 
         queryKey: ['analytics-expenses'], 
         exact: false 
       });
+    }, 1000);
+
+    const handleExpenseEvents = async () => {
+      console.log('🔄 Analytics: Expense data changed, refreshing analytics');
       
-      // Force refetch with current query key
-      queryClient.refetchQueries({ 
-        queryKey: ['analytics-expenses', dateRange.start, dateRange.end, user?.id] 
-      });
+      // Debounced invalidate to prevent excessive refetches
+      debouncedInvalidate();
     };
 
     // Listen to all expense-related events
@@ -75,7 +75,8 @@ export default function Analytics() {
       let query = supabase
         .from('expenses')
         .select('*')
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(2000); // Limit for performance
       
       // Apply family context filter
       if (isPersonalMode) {

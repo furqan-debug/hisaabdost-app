@@ -33,10 +33,6 @@ export type EventName =
   | 'goal_updated'
   | 'loan_created'
   | 'income_set'
-  | 'tour_started'
-  | 'tour_step_completed'
-  | 'tour_completed'
-  | 'tour_skipped'
   // Engagement events
   | 'session_start'
   | 'session_end'

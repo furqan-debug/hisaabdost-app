@@ -35,7 +35,7 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent id="tour-more-sheet-content" side="bottom" className="h-[70vh] rounded-t-3xl z-[9999]">
+        <SheetContent side="bottom" className="h-[70vh] rounded-t-3xl z-[9999]">
           <SheetHeader>
             <SheetTitle>More Options</SheetTitle>
             <SheetDescription>
@@ -51,7 +51,6 @@ export function MoreSheet({ open, onOpenChange }: MoreSheetProps) {
             {moreItems.map((item) => (
               <Button
                 key={item.label}
-                id={item.label === "Family" ? "tour-family-button" : undefined}
                 variant="outline"
                 className="flex flex-col h-24 items-center justify-center gap-2 rounded-2xl border-2 hover:border-primary/50 hover:bg-accent/30 transition-all"
                 onClick={() => handleItemClick(item.path, item.label)}

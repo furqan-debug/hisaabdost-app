@@ -2,198 +2,127 @@ package app.lovable.ccb1b3984ebf47e1ac451522f307f140;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdValue;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.OnPaidEventListener;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.appopen.AppOpenAd;
-import com.appsflyer.AFAdRevenueData;
-import com.appsflyer.adrevenue.AppsFlyerAdRevenue;
-import com.appsflyer.adrevenue.adnetworks.generic.MediationNetwork;
-import com.appsflyer.adrevenue.adnetworks.generic.Scheme;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
-public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
+import java.util.Collections;
+import java.util.Date;
+
+public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
+
     private static final String LOG_TAG = "AppOpenAdManager";
     private static final long AD_CACHE_TIMEOUT = 4 * 60 * 60 * 1000; // 4 hours
     private static final long MIN_SHOW_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
 
+    private final Application application;
     private AppOpenAd appOpenAd = null;
-    private AppOpenAd.AppOpenAdLoadCallback loadCallback;
     private Activity currentActivity;
-    private Context context;
-    private String adUnitId;
+    private final String adUnitId;
     private long loadTime = 0;
     private long lastShownTime = 0;
     private boolean isShowingAd = false;
     private boolean isLoadingAd = false;
 
-    public AppOpenAdManager(Context context, String adUnitId) {
-        this.context = context;
+    public AppOpenAdManager(Application application, String adUnitId) {
+        this.application = application;
         this.adUnitId = adUnitId;
+
+        // ✅ Register test device for AdMob
+        RequestConfiguration configuration = new RequestConfiguration.Builder()
+                .setTestDeviceIds(Collections.singletonList("938e28d1-e0bf-45c3-bdb4-c4178078c673"))
+                .build();
+        MobileAds.setRequestConfiguration(configuration);
+
+        // ✅ Observe lifecycle
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+        application.registerActivityLifecycleCallbacks(this);
     }
 
-    public void setAdUnitId(String adUnitId) {
-        this.adUnitId = adUnitId;
-    }
-
-    public void setFrequencyHours(int hours) {
-        // Frequency is handled by MIN_SHOW_INTERVAL
-        Log.d(LOG_TAG, "Frequency set to " + hours + " hours");
-    }
-
-    /**
-     * Load an app open ad
-     */
+    // ---------------------------- LOAD AD ----------------------------
     public void loadAd(Activity activity) {
         if (isLoadingAd || isAdAvailable()) {
-            Log.d(LOG_TAG, "Ad already loading or available");
+            Log.d(LOG_TAG, "⚠️ Ad already loading or available");
             return;
         }
 
         isLoadingAd = true;
-        loadCallback = new AppOpenAd.AppOpenAdLoadCallback() {
-            @Override
-            public void onAdLoaded(@NonNull AppOpenAd ad) {
-                Log.d(LOG_TAG, "✅ App Open ad loaded successfully");
-                appOpenAd = ad;
-                loadTime = new Date().getTime();
-                isLoadingAd = false;
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                Log.e(LOG_TAG, "❌ Failed to load App Open ad: " + loadAdError.getMessage());
-                isLoadingAd = false;
-                appOpenAd = null;
-            }
-        };
-
         AdRequest request = new AdRequest.Builder().build();
-        Log.d(LOG_TAG, "📡 Loading App Open ad with ID: " + adUnitId);
+        Log.d(LOG_TAG, "📡 Loading App Open Ad with ID: " + adUnitId);
+
         AppOpenAd.load(
-            activity,
-            adUnitId,
-            request,
-            AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
-            loadCallback
+                activity,
+                adUnitId,
+                request,
+                AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
+                new AppOpenAd.AppOpenAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull AppOpenAd ad) {
+                        Log.d(LOG_TAG, "✅ App Open Ad loaded successfully");
+                        appOpenAd = ad;
+                        loadTime = new Date().getTime();
+                        isLoadingAd = false;
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError error) {
+                        Log.e(LOG_TAG, "❌ Failed to load App Open Ad: " + error.getMessage());
+                        isLoadingAd = false;
+                        appOpenAd = null;
+                    }
+                }
         );
     }
 
-    /**
-     * Check if ad is available and not expired
-     */
     private boolean isAdAvailable() {
-        return appOpenAd != null && wasLoadTimeLessThanNHoursAgo(4);
+        return appOpenAd != null && (new Date().getTime() - loadTime) < AD_CACHE_TIMEOUT;
     }
 
-    /**
-     * Check if ad was loaded less than n hours ago
-     */
-    private boolean wasLoadTimeLessThanNHoursAgo(long numHours) {
-        long dateDifference = new Date().getTime() - loadTime;
-        long numMilliSecondsPerHour = 3600000;
-        return (dateDifference < (numMilliSecondsPerHour * numHours));
-    }
-
-    /**
-     * Check if enough time has passed since last ad was shown
-     */
     private boolean canShowAd() {
-        long currentTime = new Date().getTime();
-        long timeSinceLastShown = currentTime - lastShownTime;
-        
-        if (lastShownTime == 0) {
-            return true; // First time showing
-        }
-        
-        return timeSinceLastShown >= MIN_SHOW_INTERVAL;
+        return (lastShownTime == 0) ||
+                ((new Date().getTime() - lastShownTime) >= MIN_SHOW_INTERVAL);
     }
 
-    /**
-     * Log ad revenue to AppsFlyer
-     */
-    private void logAdRevenueToAppsFlyer(AdValue adValue, String adType, String placement) {
-        try {
-            // Convert micros to standard currency (AdMob uses micro-units)
-            double revenue = adValue.getValueMicros() / 1_000_000.0;
-            String currencyCode = adValue.getCurrencyCode();
-            
-            Log.d(LOG_TAG, "💰 Ad Revenue Event - Amount: " + revenue + " " + currencyCode + 
-                  ", Type: " + adType + ", Placement: " + placement);
-            
-            // Build additional parameters map
-            Map<String, Object> additionalParameters = new HashMap<>();
-            additionalParameters.put(Scheme.AD_UNIT, adUnitId);
-            additionalParameters.put(Scheme.AD_TYPE, adType);
-            additionalParameters.put(Scheme.PLACEMENT, placement);
-            
-            // Create AFAdRevenueData object
-            AFAdRevenueData adRevenueData = new AFAdRevenueData.Builder()
-                .setMediationNetwork(MediationNetwork.ADMOB)
-                .setRevenue(revenue)
-                .setCurrency(currencyCode)
-                .setAdditionalParameters(additionalParameters)
-                .build();
-            
-            // Log to AppsFlyer
-            AppsFlyerAdRevenue.logAdRevenue(context, adRevenueData, additionalParameters);
-            
-            Log.d(LOG_TAG, "✅ AppsFlyer Ad Revenue Logged Successfully");
-            
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "❌ Failed to log ad revenue to AppsFlyer: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Show the app open ad if available
-     */
-    public void showAdIfAvailable(@NonNull final Activity activity) {
+    // ---------------------------- SHOW AD ----------------------------
+    public void showAdIfAvailable(@NonNull Activity activity) {
         if (isShowingAd) {
-            Log.d(LOG_TAG, "Ad is already showing");
+            Log.d(LOG_TAG, "⚠️ Ad already showing");
             return;
         }
 
         if (!isAdAvailable()) {
-            Log.d(LOG_TAG, "Ad not available, loading new ad");
+            Log.d(LOG_TAG, "🔄 Ad not available — loading new one");
             loadAd(activity);
             return;
         }
 
         if (!canShowAd()) {
-            Log.d(LOG_TAG, "Not enough time passed since last ad (4 hour minimum)");
+            Log.d(LOG_TAG, "🕓 Ad cooldown (4h) not complete");
             return;
         }
 
-        Log.d(LOG_TAG, "📺 Showing App Open ad");
-        
-        // Set up revenue tracking listener
-        appOpenAd.setOnPaidEventListener(new OnPaidEventListener() {
-            @Override
-            public void onPaidEvent(@NonNull AdValue adValue) {
-                Log.d(LOG_TAG, "💵 Paid event received from AdMob");
-                logAdRevenueToAppsFlyer(adValue, "App Open", "App_Launch");
-            }
+        Log.d(LOG_TAG, "📺 Showing App Open Ad");
+
+        appOpenAd.setOnPaidEventListener(adValue -> {
+            Log.d(LOG_TAG, "💵 Paid event received from AdMob");
         });
-        
+
         appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override
             public void onAdDismissedFullScreenContent() {
-                Log.d(LOG_TAG, "✅ App Open ad dismissed");
+                Log.d(LOG_TAG, "✅ Ad dismissed");
                 appOpenAd = null;
                 isShowingAd = false;
                 lastShownTime = new Date().getTime();
@@ -202,7 +131,7 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
 
             @Override
             public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                Log.e(LOG_TAG, "❌ Failed to show App Open ad: " + adError.getMessage());
+                Log.e(LOG_TAG, "❌ Failed to show ad: " + adError.getMessage());
                 appOpenAd = null;
                 isShowingAd = false;
                 loadAd(currentActivity);
@@ -210,7 +139,7 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
 
             @Override
             public void onAdShowedFullScreenContent() {
-                Log.d(LOG_TAG, "📱 App Open ad showed full screen");
+                Log.d(LOG_TAG, "📱 App Open Ad displayed");
                 isShowingAd = true;
             }
         });
@@ -218,51 +147,23 @@ public class AppOpenAdManager implements Application.ActivityLifecycleCallbacks,
         appOpenAd.show(activity);
     }
 
-    /**
-     * Lifecycle observer - show ad when app comes to foreground
-     */
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    public void onMoveToForeground() {
+    // ---------------------------- LIFECYCLE ----------------------------
+    @Override
+    public void onStart(@NonNull LifecycleOwner owner) {
         if (currentActivity != null) {
-            Log.d(LOG_TAG, "🔄 App moved to foreground");
+            Log.d(LOG_TAG, "🔄 App moved to foreground — checking for Ad");
             showAdIfAvailable(currentActivity);
         }
     }
 
-    @Override
-    public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
+    @Override public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
+    @Override public void onActivityStarted(@NonNull Activity activity) { currentActivity = activity; }
+    @Override public void onActivityResumed(@NonNull Activity activity) { currentActivity = activity; }
+    @Override public void onActivityPaused(@NonNull Activity activity) {}
+    @Override public void onActivityStopped(@NonNull Activity activity) {}
+    @Override public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
+    @Override public void onActivityDestroyed(@NonNull Activity activity) {}
 
-    @Override
-    public void onActivityStarted(@NonNull Activity activity) {
-        if (!isShowingAd) {
-            currentActivity = activity;
-        }
-    }
-
-    @Override
-    public void onActivityResumed(@NonNull Activity activity) {
-        if (!isShowingAd) {
-            currentActivity = activity;
-        }
-    }
-
-    @Override
-    public void onActivityPaused(@NonNull Activity activity) {}
-
-    @Override
-    public void onActivityStopped(@NonNull Activity activity) {}
-
-    @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
-
-    @Override
-    public void onActivityDestroyed(@NonNull Activity activity) {}
-
-    public boolean isAdLoaded() {
-        return isAdAvailable();
-    }
-
-    public boolean isAdShowing() {
-        return isShowingAd;
-    }
+    public boolean isAdLoaded() { return isAdAvailable(); }
+    public boolean isAdShowing() { return isShowingAd; }
 }

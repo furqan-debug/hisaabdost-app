@@ -11,7 +11,6 @@ import { useOptimizedDataSync } from "@/hooks/useOptimizedDataSync";
 import { ContextIndicator } from "@/components/ui/context-indicator";
 import { PullToRefresh } from "@/components/native/PullToRefresh";
 import { useQueryClient } from "@tanstack/react-query";
-import { AppTour } from "@/components/tour/AppTour";
 
 /**
  * Dashboard page component that displays financial overview
@@ -114,9 +113,6 @@ const Dashboard = () => {
             />
         </div>
       </PullToRefresh>
-      
-      {/* App Tour for first-time users */}
-      <AppTour />
     </>
   );
 };

@@ -585,6 +585,8 @@ export default function Family() {
                                     placeholder="member@example.com"
                                     value={inviteEmail}
                                     onChange={(e) => setInviteEmail(e.target.value)}
+                                    autoComplete="username"
+                                    inputMode="email"
                                   />
                                   <p className="text-xs text-muted-foreground">
                                     Must be a registered user
