@@ -15,6 +15,7 @@ import { AppTourProvider } from "@/hooks/useAppTour";
 import { OfflineProvider } from "@/components/offline/OfflineProvider";
 import { AppOpenAd } from "@/components/ads/AppOpenAd";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useFirstTimeVisit } from "@/hooks/useFirstTimeVisit";
@@ -102,6 +103,7 @@ const App = () => {
                         <FinnyProvider>
                           <AppTourProvider>
                       <BrowserRouter>
+                        <AnalyticsProvider>
                         <ScrollToTop />
                         <Suspense fallback={<OptimizedLoadingScreen />}>
                           <Routes>
@@ -139,6 +141,7 @@ const App = () => {
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </Suspense>
+                        </AnalyticsProvider>
                     </BrowserRouter>
                     
                     {/* Native App Open Ad */}
