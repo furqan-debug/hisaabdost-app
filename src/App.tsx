@@ -39,6 +39,7 @@ const ManageCategories = lazy(() => import("@/pages/ManageCategories"));
 const ManageFunds = lazy(() => import("@/pages/ManageFunds"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const AnalyticsAdmin = lazy(() => import("@/pages/AnalyticsAdmin"));
 
 // Create QueryClient with optimized settings for mobile
 const queryClient = new QueryClient({
@@ -110,6 +111,13 @@ const App = () => {
                             
                             {/* Public routes */}
                             <Route path="/auth" element={<Auth />} />
+                            
+                            {/* Analytics Admin */}
+                            <Route path="/analytics-admin" element={
+                              <ProtectedRoute>
+                                <AnalyticsAdmin />
+                              </ProtectedRoute>
+                            } />
                             
                             
                             {/* Protected routes with Layout */}
