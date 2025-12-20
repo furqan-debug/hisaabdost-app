@@ -3,6 +3,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
 
 console.log('🚀 Starting React application...');
 
