@@ -26,7 +26,7 @@ export function usePushNotifications() {
           // Optionally schedule a daily reminder (e.g., 8pm)
           await LocalNotificationService.scheduleDailyReminder(
             1001,
-            `Hi ${user.name}!`,
+            `Hi ${user.user_metadata?.full_name || 'there'}!`,
             'Don\'t forget to add your expenses today.',
             20, // 8pm
             0
