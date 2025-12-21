@@ -26,7 +26,7 @@ export function UserSection({
       <div className="flex items-center mb-4">
         <Avatar className="h-10 w-10 mr-3">
           <AvatarImage 
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
+            src="https://www.shutterstock.com/image-vector/vector-illustration-color-avatar-user-600nw-2463110203.jpg" 
             alt={user?.email || "User"} 
           />
           <AvatarFallback className="bg-primary/10 text-primary">

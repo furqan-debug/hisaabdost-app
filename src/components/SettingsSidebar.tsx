@@ -418,7 +418,7 @@ const SettingsSidebar = ({ isOpen, onClose, onParentClose }: SettingsSidebarProp
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
                 <Avatar className="h-10 w-10">
                   <AvatarImage 
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
+                    src="https://www.shutterstock.com/image-vector/vector-illustration-color-avatar-user-600nw-2463110203.jpg" 
                     alt={user?.email || "User"} 
                   />
                   <AvatarFallback className="bg-primary/10 text-primary">

@@ -40,7 +40,7 @@ export default function Welcome() {
         duration: 0.6
       }} className="flex justify-center">
           <div className="relative">
-            <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Hisaab Dost" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
+            <img src="/lovable-uploads/12aae181-1a03-4067-a879-2f29d4213837.png" alt="Hisaab Dost" className="w-32 h-32 md:w-40 md:h-40 object-contain" />
           </div>
         </motion.div>
 

@@ -54,7 +54,7 @@ const Sidebar = () => {
       <SidebarContent>
         <div className="flex items-center gap-2 px-4 py-6">
           <img
-            src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png"
+            src="/lovable-uploads/12aae181-1a03-4067-a879-2f29d4213837.png"
             alt="Hisab Dost logo"
             className="h-7 w-7 bg-white rounded shadow-sm"
             style={{ filter: "drop-shadow(0 2px 3px rgba(128,102,255,0.10))" }}

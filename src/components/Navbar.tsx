@@ -37,11 +37,11 @@ const Navbar = () => {
     paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : '0',
     top: 0
   }} className="fixed -top-0.5 left-0 right-0 z-50 bg-background/95 dark:bg-card/95 backdrop-blur-lg border-b-2 border-border/60 dark:border-border dark:shadow-xl dark:shadow-black/40 py-0">
-      <div className="flex h-12 items-center justify-between px-2 sm:px-3 lg:px-4 max-w-6xl mx-auto mt-[10px] mb-[10px] py-[2px]">
+      <div className="flex h-11 items-center justify-between px-2 sm:px-3 lg:px-4 max-w-6xl mx-auto mt-[10px] mb-[10px] py-[2px]">
         {/* Left: Logo and Title */}
         <div onClick={handleLogoClick} className="flex items-center cursor-pointer hover:opacity-90 transition-all duration-200 flex-1 justify-start mx-1 my-[3px] px-2 py-1 rounded-lg hover:bg-accent/10 dark:hover:bg-accent/20">
-          <div className="h-9 w-9 mr-2 rounded-lg bg-primary/10 dark:bg-white p-1.5 ring-2 ring-border/50 dark:ring-white/20 dark:shadow-lg dark:shadow-primary/20">
-            <img src="/lovable-uploads/865d9039-b9ca-4d0f-9e62-7321253ffafa.png" alt="Hisaab Dost logo" className="h-full w-full object-contain" />
+          <div className="h-11 w-11 mr-3 rounded-lg bg-primary/10 dark:bg-white p-1.5 ring-2 ring-border/50 dark:ring-white/20 dark:shadow-lg dark:shadow-primary/20">
+            <img src="/lovable-uploads/12aae181-1a03-4067-a879-2f29d4213837.png" alt="Hisaab Dost logo" className="h-full w-full object-contain" />
           </div>
           <div className="flex flex-col">
             <h2 className="font-bold text-sm text-foreground dark:text-foreground leading-tight">
@@ -59,9 +59,9 @@ const Navbar = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-accent/10 dark:hover:bg-accent/20">
-                <Avatar className="h-7 w-7 ring-1 ring-border/50">
-                  <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" alt={user?.email || "User"} />
+              <Button variant="ghost" size="sm" className="h-10 w-10 p-8 rounded-full hover:bg-accent/10 dark:hover:bg-accent/20">
+                <Avatar className="h-10 w-10 ring-1 ring-border/50">
+                  <AvatarImage src="https://www.shutterstock.com/image-vector/vector-illustration-color-avatar-user-600nw-2463110203.jpg" alt={user?.email || "User"} />
                   <AvatarFallback className="text-xs">
                     👤
                   </AvatarFallback>

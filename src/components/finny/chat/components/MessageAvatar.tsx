@@ -25,7 +25,7 @@ const MessageAvatar = React.memo(({ isUser }: MessageAvatarProps) => {
         {isUser ? (
           <>
             <AvatarImage 
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face" 
+              src="https://www.shutterstock.com/image-vector/vector-illustration-color-avatar-user-600nw-2463110203.jpg" 
               alt="User Avatar" 
             />
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
