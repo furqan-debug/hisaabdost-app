@@ -5,23 +5,33 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep WebView JavaScript interfaces
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve line number information for debugging
+-keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Capacitor classes
+-keep class com.getcapacitor.** { *; }
+-keep class com.capacitorjs.** { *; }
+
+# Keep Supabase SDK classes
+-keep class io.supabase.** { *; }
 
 # Keep AppsFlyer SDK classes to prevent obfuscation
 -keep class com.appsflyer.** { *; }
 
 # Keep Kotlin internal classes (required for stability)
 -keep class kotlin.jvm.internal.** { *; }
+
+# Keep JavaScript bridge for WebView
+-keepclassmembers class * extends android.webkit.WebViewClient {
+    public void *(android.webkit.WebView, java.lang.String, android.graphics.Bitmap);
+    public boolean *(android.webkit.WebView, java.lang.String);
+    public void *(android.webkit.WebView, java.lang.String);
+}
+
+# Keep all classes that might be accessed from JavaScript
+-keep class * implements android.webkit.JavascriptInterface { *; }
