@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+hisaabdost-upload.jks 
+upload_certificate.pem 
+android/app/release/ 
